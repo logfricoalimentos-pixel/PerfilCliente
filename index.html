@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0f1a">
+<meta name="color-scheme" content="dark">
+<title>Perfil Cliente — Ordens com Shelflife</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg: #0a0f1a;
+  --bg-2: #0e1524;
+  --surface: #141c2b;
+  --surface-2: #1a2436;
+  --hover: #223048;
+  --border: #2c3b55;
+  --border-soft: #1e2a3d;
+  --text: #eef3fb;
+  --text-2: #b0becf;
+  --muted: #7a8ba3;
+  --accent: #2dd4bf;
+  --accent-2: #14b8a6;
+  --accent-bg: rgba(45, 212, 191, 0.12);
+  --accent-border: rgba(45, 212, 191, 0.4);
+  --blue: #60a5fa;
+  --danger: #fb7185;
+  --danger-bg: rgba(251, 113, 133, 0.12);
+  --danger-border: rgba(251, 113, 133, 0.4);
+  --warn: #fbbf24;
+  --inapto: #8b96a8;
+  --r: 12px;
+  --r-sm: 8px;
+  --r-xs: 6px;
+  --shadow: 0 8px 30px rgba(0,0,0,.35);
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --focus: 0 0 0 3px rgba(45, 212, 191, 0.35);
+  --max: 1100px;
+  --space: 1rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  padding-left: var(--safe-l);
+  padding-right: var(--safe-r);
+}
+button, input { font: inherit; color: inherit; }
+a.skip {
+  position: absolute; left: -9999px; top: 0;
+  background: var(--accent); color: #042f2e; padding: .5rem 1rem; z-index: 999; border-radius: var(--r-xs);
+}
+a.skip:focus { left: .5rem; top: .5rem; }
+
+.app-header {
+  background: linear-gradient(180deg, #121a2c 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border-soft);
+  padding: calc(.85rem + var(--safe-t)) var(--space) .85rem;
+  position: sticky; top: 0; z-index: 60;
+}
+.app-header__inner {
+  max-width: var(--max); margin: 0 auto;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .65rem;
+}
+.brand__title {
+  font-size: clamp(.95rem, 2.6vw, 1.2rem); font-weight: 700; letter-spacing: -.02em;
+  display: flex; align-items: center; gap: .4rem;
+}
+.brand__sub { font-size: .75rem; color: var(--muted); margin-top: .12rem; }
+.date-pill {
+  display: inline-flex; align-items: center; gap: .3rem;
+  font-size: .8rem; font-weight: 650; color: var(--accent);
+  background: var(--accent-bg); border: 1px solid var(--accent-border);
+  border-radius: 999px; padding: .35rem .7rem; white-space: nowrap;
+}
+
+.toolbar-bar {
+  background: var(--bg-2); border-bottom: 1px solid var(--border-soft);
+  position: sticky; top: 0; z-index: 55;
+}
+.toolbar {
+  max-width: var(--max); margin: 0 auto; padding: .55rem var(--space);
+  display: flex; flex-wrap: wrap; gap: .4rem; align-items: center;
+}
+.toolbar__nav {
+  display: flex; gap: .35rem; padding-right: .55rem; margin-right: .15rem;
+  border-right: 1px solid var(--border);
+}
+.toolbar__actions { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .3rem;
+  min-height: 40px; padding: .45rem .8rem; border-radius: var(--r-sm);
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  font-size: .82rem; font-weight: 600; cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s, transform .1s;
+  white-space: nowrap; -webkit-tap-highlight-color: transparent; user-select: none;
+}
+.btn:hover { background: var(--hover); border-color: var(--accent-border); color: var(--accent); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus); }
+.btn:active { transform: scale(.98); }
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.btn--primary { background: var(--accent); border-color: var(--accent); color: #042f2e; }
+.btn--primary:hover { background: var(--accent-2); border-color: var(--accent-2); color: #fff; }
+.btn--danger { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger); }
+.btn--danger:hover { background: rgba(251, 113, 133, .22); color: #fff; border-color: var(--danger); }
+.btn--upload {
+  background: rgba(96, 165, 250, .15);
+  border-color: rgba(96, 165, 250, .45);
+  color: var(--blue);
+}
+.btn--upload:hover { background: rgba(96, 165, 250, .28); color: #fff; border-color: var(--blue); }
+.btn--ghost { background: transparent; }
+.btn--sm { min-height: 34px; padding: .28rem .6rem; font-size: .74rem; border-radius: var(--r-xs); }
+.btn--nav.is-active {
+  background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent);
+}
+@media (max-width: 420px) {
+  .btn__hide-sm { display: none; }
+  .btn { min-height: 38px; padding: .4rem .65rem; }
+}
+
+.banner-upload {
+  max-width: var(--max); margin: .65rem auto 0; padding: 0 var(--space);
+}
+.banner-upload__inner {
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--r);
+  padding: .7rem .9rem;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem;
+  font-size: .82rem; color: var(--text-2);
+}
+.banner-upload__meta strong { color: var(--text); }
+.banner-upload__meta .ok { color: var(--accent); }
+.banner-upload__meta .warn { color: var(--warn); }
+
+.stats-section {
+  max-width: var(--max); margin: 0 auto; padding: .75rem var(--space) .15rem;
+}
+.stats {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem;
+}
+@media (min-width: 640px) {
+  .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.stat {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: .75rem .85rem; min-width: 0;
+}
+.stat__value {
+  font-size: clamp(1.25rem, 3.8vw, 1.6rem); font-weight: 750;
+  color: var(--accent); letter-spacing: -.03em; line-height: 1.15;
+}
+.stat__label {
+  font-size: .65rem; font-weight: 650; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .04em; margin-top: .2rem;
+}
+
+.main {
+  max-width: var(--max); margin: 0 auto;
+  padding: .75rem var(--space) calc(1.75rem + var(--safe-b));
+}
+.view { display: none; }
+.view.is-active { display: block; }
+
+.field {
+  width: 100%; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: .7rem .9rem; color: var(--text); font-size: .9rem;
+  transition: border-color .15s, box-shadow .15s;
+}
+.field:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus); }
+.field::placeholder { color: var(--muted); }
+.search { margin-bottom: .75rem; }
+
+.order {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-sm);
+  margin-bottom: .5rem;
+  overflow: hidden;
+}
+.order + .order { border-top-color: var(--border-soft); }
+.order.is-open {
+  border-color: var(--border);
+  background: var(--surface);
+}
+.order__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  min-height: 44px;
+  padding: .55rem .85rem;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.order__head:hover { background: var(--hover); }
+.order__head:focus-visible { outline: none; box-shadow: inset var(--focus); }
+.order__head-left {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  min-width: 0;
+}
+.order__chev {
+  color: var(--muted);
+  font-size: .7rem;
+  width: 1rem;
+  text-align: center;
+  transition: transform .15s ease;
+  flex-shrink: 0;
+}
+.order.is-open .order__chev { transform: rotate(90deg); color: var(--accent); }
+.order__id {
+  font-family: var(--mono);
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.01em;
+}
+.order.is-open .order__id { color: var(--accent); }
+.order__badge {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  font-size: .68rem;
+  font-weight: 600;
+  padding: .15rem .45rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.order.is-open .order__badge {
+  border-color: var(--accent-border);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+.order__body { display: none; }
+.order.is-open .order__body { display: block; }
+.order.is-open .order__head {
+  border-bottom: 1px solid var(--border-soft);
+}
+.client-list {
+  list-style: none;
+  margin: 0;
+  padding: .15rem 0 .35rem;
+}
+.client-list__item {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: .65rem;
+  align-items: baseline;
+  padding: .4rem .85rem;
+  border-bottom: 1px solid var(--border-soft);
+}
+.client-list__item:last-child { border-bottom: none; }
+.client-list__item:hover { background: rgba(255,255,255,.02); }
+.client-list__cod {
+  font-family: var(--mono);
+  font-size: .8rem;
+  font-weight: 650;
+  color: var(--blue);
+}
+.client-list__nome {
+  font-size: .84rem;
+  font-weight: 500;
+  color: var(--text-2);
+  line-height: 1.35;
+  word-break: break-word;
+}
+@media (max-width: 420px) {
+  .client-list__item {
+    grid-template-columns: 1fr;
+    gap: .15rem;
+    padding: .45rem .85rem;
+  }
+  .client-list__cod { font-size: .75rem; }
+}
+
+.table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+th {
+  text-align: left; padding: .5rem .85rem; background: var(--bg-2); color: var(--muted);
+  font-size: .64rem; font-weight: 650; text-transform: uppercase; letter-spacing: .05em; white-space: nowrap;
+}
+td { padding: .5rem .85rem; border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--hover); }
+.cod {
+  font-family: var(--mono); color: var(--blue); font-weight: 650;
+  white-space: nowrap; font-size: .84rem;
+}
+.nome { font-weight: 600; color: var(--text); word-break: break-word; }
+
+.cad-bar {
+  display: flex; flex-wrap: wrap; gap: .45rem; align-items: center; margin-bottom: .75rem;
+}
+.cad-bar__search { flex: 1 1 180px; min-width: 0; }
+.cad-bar__filters { display: flex; flex-wrap: wrap; gap: .3rem; }
+.cad-bar__filters .btn.is-active {
+  background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent);
+}
+.status {
+  display: inline-flex; align-items: center; gap: .3rem;
+  font-size: .76rem; font-weight: 700;
+}
+.status::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor;
+}
+.status--apto { color: var(--accent); }
+.status--inapto { color: var(--inapto); }
+tr.is-inapto { background: rgba(107, 114, 128, .08); }
+tr.is-inapto td, tr.is-inapto .cod, tr.is-inapto .nome { color: var(--inapto) !important; }
+
+@media (max-width: 560px) {
+  .table-cards thead { display: none; }
+  .table-cards tbody, .table-cards tr, .table-cards td { display: block; width: 100%; }
+  .table-cards tr {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-sm); margin-bottom: .55rem; padding: .6rem .75rem;
+  }
+  .table-cards tr.is-inapto { border-color: #3a4558; }
+  .table-cards td {
+    border: none; padding: .18rem 0; display: flex;
+    justify-content: space-between; align-items: center; gap: .5rem;
+  }
+  .table-cards td::before {
+    content: attr(data-label); font-size: .62rem; font-weight: 650;
+    text-transform: uppercase; letter-spacing: .04em; color: var(--muted); flex-shrink: 0;
+  }
+  .table-cards td.td-action {
+    margin-top: .4rem; padding-top: .45rem; border-top: 1px solid var(--border-soft);
+    justify-content: flex-end;
+  }
+  .table-cards td.td-action::before { content: none; }
+  .table-cards tr:hover td { background: transparent; }
+}
+
+.empty {
+  text-align: center; color: var(--muted); padding: 2rem 1rem; font-size: .9rem;
+  background: var(--surface); border: 1px dashed var(--border); border-radius: var(--r);
+}
+.app-footer {
+  text-align: center; font-size: .72rem; color: var(--muted);
+  padding: 1rem var(--space) calc(1.1rem + var(--safe-b));
+  border-top: 1px solid var(--border-soft);
+}
+
+.modal-backdrop {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(5, 10, 20, .72); backdrop-filter: blur(3px);
+  align-items: flex-end; justify-content: center; padding: 0;
+}
+.modal-backdrop.is-open { display: flex; }
+@media (min-width: 480px) {
+  .modal-backdrop { align-items: center; padding: 1rem; }
+}
+.modal {
+  width: 100%; max-width: 420px; max-height: min(88dvh, 90vh); overflow: auto;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r) var(--r) 0 0;
+  padding: 1.15rem 1.1rem calc(1.15rem + var(--safe-b)); box-shadow: var(--shadow);
+}
+@media (min-width: 480px) {
+  .modal { border-radius: var(--r); padding: 1.25rem; }
+}
+.modal__title { font-size: 1.05rem; font-weight: 700; margin-bottom: .9rem; letter-spacing: -.02em; }
+.modal label {
+  display: block; font-size: .72rem; font-weight: 650; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .03em; margin-bottom: .28rem;
+}
+.modal .field { margin-bottom: .85rem; }
+.modal__text { font-size: .9rem; color: var(--text-2); margin-bottom: 1rem; line-height: 1.55; }
+.modal__text strong { color: var(--text); }
+.modal__actions { display: flex; flex-wrap: wrap; gap: .45rem; }
+.modal__actions .btn { flex: 1 1 auto; min-width: 120px; }
+
+.toast {
+  position: fixed; left: 50%; bottom: calc(1rem + var(--safe-b));
+  transform: translateX(-50%) translateY(140%); z-index: 300;
+  max-width: calc(100vw - 2rem); padding: .65rem 1.1rem; border-radius: 999px;
+  background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+  font-size: .82rem; font-weight: 600; box-shadow: var(--shadow);
+  transition: transform .22s ease; text-align: center;
+}
+.toast.is-show { transform: translateX(-50%) translateY(0); }
+.toast.is-ok { border-color: var(--accent-border); color: var(--accent); }
+
+#filePedidos { display: none; }
+
+@media print {
+  @page { size: A4 portrait; margin: 10mm 8mm; }
+  html, body {
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 9pt;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .app-header { position: static; background: none !important; border-bottom: 1.5px solid #000; padding: 0 0 6px; margin-bottom: 6px; }
+  .brand__title { color: #000 !important; font-size: 12pt; }
+  .brand__sub, .date-pill { color: #333 !important; border-color: #999; background: none; font-size: 8pt; }
+  .toolbar-bar, .toolbar, .search, .btn, .app-footer, .modal-backdrop, .no-print,
+  #viewCadastro, .toast, a.skip, .banner-upload { display: none !important; }
+  #viewOrdens { display: block !important; }
+  .stats-section { padding: 4px 0 6px; }
+  .stats { grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  .stat { background: none !important; border: 1px solid #999; padding: 4px 6px; }
+  .stat__value, .stat__label { color: #000 !important; font-size: 8pt; }
+  .stat__value { font-size: 11pt !important; }
+  .main { padding: 0; max-width: none; }
+  .order {
+    background: none !important;
+    border: 1px solid #444;
+    border-radius: 0;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 6px;
+  }
+  .order__head {
+    background: linear-gradient(90deg, #f0f0f0 0%, #e4e4e4 40%, #c8ccd0 100%) !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color: #000 !important;
+    cursor: default;
+    padding: 5px 8px;
+    min-height: 0;
+    border-bottom: 1px solid #a8acb0 !important;
+  }
+  .order__head:hover {
+    background: linear-gradient(90deg, #f0f0f0 0%, #e4e4e4 40%, #c8ccd0 100%) !important;
+  }
+  .order__chev { display: none !important; }
+  .order__id { color: #000 !important; font-size: 10pt; font-weight: 700; }
+  .order__badge {
+    background: none !important;
+    border: 1px solid #666 !important;
+    color: #000 !important;
+    font-size: 8pt;
+    padding: 1px 6px;
+  }
+  .order__body { display: block !important; padding: 2px 4px 4px; }
+  /* Duas colunas de clientes por ordem — economiza folhas */
+  .client-list {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0 10px !important;
+    column-gap: 10px !important;
+    padding: 2px 4px 4px !important;
+  }
+  .client-list__item {
+    display: grid !important;
+    grid-template-columns: 4.2rem minmax(0, 1fr) !important;
+    gap: 4px !important;
+    align-items: baseline !important;
+    padding: 2px 2px !important;
+    border-bottom: 1px solid #ddd !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    color: #000;
+  }
+  .client-list__cod {
+    color: #000 !important;
+    font-size: 8pt !important;
+    font-weight: 700;
+  }
+  .client-list__nome {
+    color: #000 !important;
+    font-size: 8pt !important;
+    font-weight: 500;
+  }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
+
+<header class="app-header" role="banner">
+  <div class="app-header__inner">
+    <div class="brand">
+      <h1 class="brand__title"><span aria-hidden="true">🚚</span> Ordens de Carga · Shelflife</h1>
+      <p class="brand__sub">Código e nome dos clientes · Logfrico Alimentos</p>
+    </div>
+    <div class="date-pill" id="dataHoje">📅 26/10/2026 · 23:12</div>
+  </div>
+</header>
+
+<div class="toolbar-bar no-print">
+  <nav class="toolbar" aria-label="Navegação e ações">
+    <div class="toolbar__nav" role="group" aria-label="Telas">
+      <button type="button" class="btn btn--nav is-active" id="btnOrdens" aria-pressed="true" onclick="mostrarView('ordens')">📋 Ordens</button>
+      <button type="button" class="btn btn--nav" id="btnCadastro" aria-pressed="false" onclick="mostrarView('cadastro')">📇 Cadastro</button>
+    </div>
+    <div class="toolbar__actions">
+      <button type="button" class="btn btn--upload" id="btnUploadPedidos" onclick="document.getElementById('filePedidos').click()">
+        📤 <span class="btn__hide-sm">Subir Pedidos.xls</span>
+      </button>
+      <input type="file" id="filePedidos" accept=".xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+      <button type="button" class="btn btn--primary" onclick="window.print()">🖨️ <span class="btn__hide-sm">Imprimir A4</span></button>
+      <button type="button" class="btn" onclick="salvarBackup(false)">💾 <span class="btn__hide-sm">Backup</span></button>
+      <button type="button" class="btn btn--ghost" onclick="expandirTodos()" title="Expandir todas" aria-label="Expandir todas">📂</button>
+      <button type="button" class="btn btn--ghost" onclick="recolherTodos()" title="Recolher todas" aria-label="Recolher todas">📁</button>
+    </div>
+  </nav>
+</div>
+
+<div class="banner-upload no-print">
+  <div class="banner-upload__inner">
+    <div class="banner-upload__meta" id="uploadMeta">
+      <strong>Pedidos carregados:</strong>
+      <span id="uploadInfo" class="warn">dados iniciais do sistema</span>
+    </div>
+    <div style="font-size:.75rem;color:var(--muted)">
+      Ao subir um novo <strong>Pedidos.xls</strong>, o sistema salva backup automático e <strong>substitui todos</strong> os pedidos antigos.
+    </div>
+  </div>
+</div>
+
+<section class="stats-section" aria-label="Indicadores">
+  <div class="stats">
+    <div class="stat">
+      <div class="stat__value" id="statOrdens">0</div>
+      <div class="stat__label">Ordens com Shelflife</div>
+    </div>
+    <div class="stat">
+      <div class="stat__value" id="statClientes">0</div>
+      <div class="stat__label">Clientes aptos nas ordens</div>
+    </div>
+    <div class="stat">
+      <div class="stat__value" id="statAptos">0</div>
+      <div class="stat__label">Aptos no cadastro</div>
+    </div>
+    <div class="stat">
+      <div class="stat__value" id="statInaptos">0</div>
+      <div class="stat__label">Inaptos no cadastro</div>
+    </div>
+  </div>
+</section>
+
+<main class="main" id="conteudo">
+  <section id="viewOrdens" class="view is-active" aria-label="Ordens de carga">
+    <div class="search no-print">
+      <label for="searchOrdens" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0">Buscar</label>
+      <input class="field" type="search" id="searchOrdens" placeholder="Buscar por ordem, código ou nome…" oninput="renderOrdens()" autocomplete="off">
+    </div>
+    <div id="ordensList"></div>
+  </section>
+
+  <section id="viewCadastro" class="view" aria-label="Cadastro de clientes">
+    <div class="cad-bar no-print">
+      <div class="cad-bar__search">
+        <label for="cadSearch" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0">Filtrar</label>
+        <input class="field" type="search" id="cadSearch" placeholder="Filtrar por código ou nome…" oninput="renderCadastro()" autocomplete="off">
+      </div>
+      <div class="cad-bar__filters" role="group" aria-label="Filtro de status">
+        <button type="button" class="btn btn--sm is-active" id="filtroTodos" onclick="setFiltroStatus('todos')">Todos</button>
+        <button type="button" class="btn btn--sm" id="filtroAptos" onclick="setFiltroStatus('apto')">Aptos</button>
+        <button type="button" class="btn btn--sm" id="filtroInaptos" onclick="setFiltroStatus('inapto')">Inaptos</button>
+      </div>
+      <button type="button" class="btn btn--primary btn--sm" onclick="abrirIncluir()">➕ Incluir</button>
+    </div>
+    <div class="table-scroll">
+      <table class="table-cards">
+        <thead>
+          <tr>
+            <th scope="col" style="width:110px">Código</th>
+            <th scope="col">Nome do Cliente</th>
+            <th scope="col" style="width:90px">Status</th>
+            <th scope="col" class="no-print" style="width:150px">Ação</th>
+          </tr>
+        </thead>
+        <tbody id="cadastroBody"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="app-footer">
+  Perfil Cliente · Gerado em 26/10/2026 23:12 · Upload diário de Pedidos.xls com backup automático
+</footer>
+
+<div class="modal-backdrop" id="modalIncluir" role="dialog" aria-modal="true" aria-labelledby="tituloIncluir">
+  <div class="modal">
+    <h2 class="modal__title" id="tituloIncluir">➕ Incluir cliente no cadastro</h2>
+    <label for="incluirCod">Código</label>
+    <input class="field" type="text" id="incluirCod" placeholder="Ex: 12345" inputmode="numeric" autocomplete="off">
+    <label for="incluirNome">Nome do cliente</label>
+    <input class="field" type="text" id="incluirNome" placeholder="Nome completo" autocomplete="off">
+    <div class="modal__actions">
+      <button type="button" class="btn" onclick="closeModal('modalIncluir')">Cancelar</button>
+      <button type="button" class="btn btn--primary" onclick="incluirCliente()">Incluir como Apto</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalConfirm" role="dialog" aria-modal="true" aria-labelledby="tituloConfirm">
+  <div class="modal">
+    <h2 class="modal__title" id="tituloConfirm">⚠️ Confirmar exclusão</h2>
+    <p class="modal__text" id="confirmMsg">Deseja marcar este cliente como <strong>Inapto</strong>?</p>
+    <div class="modal__actions">
+      <button type="button" class="btn" onclick="closeModal('modalConfirm')">Cancelar</button>
+      <button type="button" class="btn btn--danger" onclick="confirmarInapto()">Sim, tornar Inapto</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const DATA_SEED = {"ordens": [{"ordem": "11467000", "clientes": [{"cod": 27334, "nome": "ATACADAO COSTA - LUZIÂNIA"}, {"cod": 15498, "nome": "ATACADAO COSTA - VALPARAISO"}, {"cod": 19690, "nome": "ATACADAO DIA A DIA 25"}, {"cod": 16358, "nome": "ATACADAO DIA A DIA LJ 13"}, {"cod": 31108, "nome": "ATACADAO DIA A DIA S A"}, {"cod": 28483, "nome": "MERCADAO DA ECONOMIA  LJ-CRISTALINA"}, {"cod": 25278, "nome": "TATICO LUZIANIA"}, {"cod": 33254, "nome": "TATICO SANTA MARIA"}, {"cod": 35095, "nome": "ULTRABOX - ULT05-PLJK"}, {"cod": 35102, "nome": "ULTRABOX - ULT23-SMARIA"}, {"cod": 35067, "nome": "ULTRABOX -CIDADE OCIDENTAL"}], "num": 11}, {"ordem": "11468000", "clientes": [{"cod": 6537, "nome": "SUPERVI 02"}, {"cod": 6496, "nome": "SUPERVI 04"}, {"cod": 6539, "nome": "SUPERVI 05"}], "num": 3}, {"ordem": "11469000", "clientes": [{"cod": 25244, "nome": "ATACADAO COSTA RIO VERDE"}, {"cod": 10508, "nome": "BRETAS - B524 - RIO VERDE"}, {"cod": 33652, "nome": "MERCADAO DA ECONOMIA - RIO VERDE"}, {"cod": 29017, "nome": "REDE LUCAS DE SUPERMERCADOS"}], "num": 4}, {"ordem": "11470000", "clientes": [{"cod": 31113, "nome": "DIA A DIA 64"}, {"cod": 20887, "nome": "MERCADAO DA ECONOMIA - GOIATUBA"}, {"cod": 24143, "nome": "MERCADAO DA ECONOMIA - ITUMBIARA"}, {"cod": 23434, "nome": "REDE LUCAS DE SUPERMERCADOS"}, {"cod": 29019, "nome": "REDE LUCAS DE SUPERMERCADOS"}, {"cod": 29015, "nome": "REDE LUCAS DE SUPERMERCADOS 04"}, {"cod": 29016, "nome": "REDE LUCAS DE SUPERMERCADOS 05"}, {"cod": 29013, "nome": "ROJAO ATACADISTA"}], "num": 8}, {"ordem": "11471000", "clientes": [{"cod": 17079, "nome": "ATACADAO DIA A DIA 15"}, {"cod": 7272, "nome": "CIGA  ALIMENTACAO"}], "num": 2}, {"ordem": "11472000", "clientes": [{"cod": 17080, "nome": "MULTICANAL ATACADO"}, {"cod": 1164, "nome": "SUP PRO BRASILIAN AEROPORTO - LJ 01"}], "num": 2}, {"ordem": "11473000", "clientes": [{"cod": 23729, "nome": "DIA A DIA 47"}], "num": 1}, {"ordem": "11474000", "clientes": [{"cod": 27192, "nome": "ATACADAO DIA A DIA FL 53"}, {"cod": 18793, "nome": "PRO BRAZILIAN PQ AMAZONAS"}, {"cod": 676, "nome": "SUP PRO BRAZILIAN - T 9 - LJ 03"}, {"cod": 20375, "nome": "SUPERMERCADO PRO-BRAZILIAN - JD ATLANTIC"}], "num": 4}, {"ordem": "11475000", "clientes": [{"cod": 19124, "nome": "DIA A DIA 26"}, {"cod": 33734, "nome": "REDE MAE SUPERMERCADO"}, {"cod": 12971, "nome": "SUPERMERCADO BRASIL"}], "num": 3}, {"ordem": "11476000", "clientes": [{"cod": 20032, "nome": "GOIABAO SUPERMERCADO MAYSA"}], "num": 1}], "shelf_all": [{"cod": 21396, "nome": "ARMAZEM ATACADO E DISTRIBUICAO"}, {"cod": 24635, "nome": "ARTE TRIGO"}, {"cod": 31010, "nome": "ASSAI  ATACADISTA 310 PORTUGUAL"}, {"cod": 18613, "nome": "ASSAI - 01 051 - S.I.A"}, {"cod": 18614, "nome": "ASSAI - 052 - CEILANDIA"}, {"cod": 18618, "nome": "ASSAI - 084 - INDEPENDENCIA"}, {"cod": 18615, "nome": "ASSAI - 117 - VALPARAÍSO"}, {"cod": 18620, "nome": "ASSAI - 140 - PERIMETRAL"}, {"cod": 34117, "nome": "ASSAI ATACADISTA 308 ASA NORTE"}, {"cod": 34400, "nome": "ASSAI BRASILIA PARK"}, {"cod": 20011, "nome": "ASSAI LJ  101 - TAGUATINGA  AREAL"}, {"cod": 34406, "nome": "ASSAI TAGUATINGA SHOPPING"}, {"cod": 21751, "nome": "ATACADAO COSTA  TRES MARIAS"}, {"cod": 24413, "nome": "ATACADAO COSTA - CENTRO"}, {"cod": 18689, "nome": "ATACADAO COSTA - JARDIM GOIAS"}, {"cod": 29183, "nome": "ATACADAO COSTA - LARANJEIRAS"}, {"cod": 27334, "nome": "ATACADAO COSTA - LUZIÂNIA"}, {"cod": 16018, "nome": "ATACADAO COSTA - PEDRO LUDOVICO"}, {"cod": 21926, "nome": "ATACADAO COSTA - ROSAS DE OURO"}, {"cod": 31123, "nome": "ATACADAO COSTA - SENADOR CANEDO"}, {"cod": 34655, "nome": "ATACADAO COSTA - TRINDADE"}, {"cod": 15498, "nome": "ATACADAO COSTA - VALPARAISO"}, {"cod": 25244, "nome": "ATACADAO COSTA RIO VERDE"}, {"cod": 17079, "nome": "ATACADAO DIA A DIA 15"}, {"cod": 17453, "nome": "ATACADAO DIA A DIA 16"}, {"cod": 18137, "nome": "ATACADAO DIA A DIA 18"}, {"cod": 18246, "nome": "ATACADAO DIA A DIA 19"}, {"cod": 19690, "nome": "ATACADAO DIA A DIA 25"}, {"cod": 21561, "nome": "ATACADAO DIA A DIA 27"}, {"cod": 31111, "nome": "ATACADAO DIA A DIA 63"}, {"cod": 27192, "nome": "ATACADAO DIA A DIA FL 53"}, {"cod": 16358, "nome": "ATACADAO DIA A DIA LJ 13"}, {"cod": 31108, "nome": "ATACADAO DIA A DIA S A"}, {"cod": 26339, "nome": "ATACADO COSTA 06 AGUAS CLARAS"}, {"cod": 17138, "nome": "ATACADO COSTA 51 TAGUATINGA"}, {"cod": 17139, "nome": "ATACADO COSTA 52 SANTA MARIA"}, {"cod": 17140, "nome": "ATACADO COSTA 53 ADE"}, {"cod": 21668, "nome": "ATACADO COSTA 55 TAQUARI"}, {"cod": 32134, "nome": "ATACADO PADRAO"}, {"cod": 34491, "nome": "BIG BOX SUPERMERCADOS  BIG06 SIBE"}, {"cod": 34492, "nome": "BIG BOX SUPERMERCADOS BIG11 310N"}, {"cod": 34496, "nome": "BIG BOX SUPERMERCADOS BIG18 211N"}, {"cod": 34494, "nome": "BIG BOX SUPERMERCADOS BIG20 TAGC1"}, {"cod": 34495, "nome": "BIG BOX SUPERMERCADOS BIG21 CNB12"}, {"cod": 34497, "nome": "BIG BOX SUPERMERCADOS BIG24 314N"}, {"cod": 10507, "nome": "BRETAS - B516 - APARECIDA 1"}, {"cod": 10508, "nome": "BRETAS - B524 - RIO VERDE"}, {"cod": 10510, "nome": "BRETAS - B525 - VILA JARAGUA"}, {"cod": 10509, "nome": "BRETAS - B527 - CENTRAL"}, {"cod": 10514, "nome": "BRETAS - B541 - PQ ANHANGUERA"}, {"cod": 10515, "nome": "BRETAS - B545 - CENTRAL"}, {"cod": 10516, "nome": "BRETAS - B551 - PQ ANHANGUERA"}, {"cod": 10599, "nome": "BRETAS - B554 - CATALAO"}, {"cod": 10541, "nome": "BRETAS - B575 - AGUAS LINDAS"}, {"cod": 10531, "nome": "BRETAS - B615 - CENTRAL"}, {"cod": 10532, "nome": "BRETAS - B619 - NOVO MUNDO"}, {"cod": 10533, "nome": "BRETAS - B631 - APARECIDA 1"}, {"cod": 10600, "nome": "BRETAS - B632 - CALDAS NOVAS"}, {"cod": 10534, "nome": "BRETAS - B633 - BALNEARIO"}, {"cod": 10535, "nome": "BRETAS - B634 - JATAI"}, {"cod": 10601, "nome": "BRETAS - B635 - MORRINHOS"}, {"cod": 10536, "nome": "BRETAS - B640 - CAMPOS BELOS"}, {"cod": 10537, "nome": "BRETAS - B644 - APARECIDA 1"}, {"cod": 10737, "nome": "BRETAS - B648 - APARECIDA 3"}, {"cod": 10539, "nome": "BRETAS - B651 - NOVO MUNDO"}, {"cod": 10540, "nome": "BRETAS - B655 - MINEIROS"}, {"cod": 10775, "nome": "BRETAS - B656 - CENTRO"}, {"cod": 10782, "nome": "BRETAS - B658 - PQ ANHANGUERA"}, {"cod": 10542, "nome": "BRETAS - B662 - SENADOR CANEDO"}, {"cod": 10513, "nome": "BRETAS- B538 - APARECIDA 2"}, {"cod": 21087, "nome": "CAMPINAS ATACADO"}, {"cod": 34462, "nome": "CANDANGO BAIRRO"}, {"cod": 12435, "nome": "CANDANGO BAIRRO SETOR 11"}, {"cod": 885, "nome": "CANDANGO I"}, {"cod": 4300, "nome": "CANDANGO II"}, {"cod": 17686, "nome": "CANDANGO PÉROLA"}, {"cod": 7272, "nome": "CIGA  ALIMENTACAO"}, {"cod": 31695, "nome": "CIGA COZINHA INDUSTRIAL E GESTAO ALIMENT"}, {"cod": 4070, "nome": "COMERCIAL IPE"}, {"cod": 18112, "nome": "COMERCIAL LIDERANCA"}, {"cod": 30651, "nome": "COMERCIAL REIS"}, {"cod": 30656, "nome": "COMERCIAL REIS"}, {"cod": 18335, "nome": "COMERCIAL REIS LOJA 14"}, {"cod": 2725, "nome": "CONQUISTA SUPERMERCADO - 4"}, {"cod": 2722, "nome": "CONQUISTA SUPERMERCADO - MATRIZ"}, {"cod": 2723, "nome": "CONQUISTA SUPERMERCADO 2"}, {"cod": 21711, "nome": "DIA A DIA 01"}, {"cod": 26897, "nome": "DIA A DIA 04"}, {"cod": 26898, "nome": "DIA A DIA 07"}, {"cod": 26899, "nome": "DIA A DIA 08"}, {"cod": 19688, "nome": "DIA A DIA 12"}, {"cod": 26910, "nome": "DIA A DIA 21"}, {"cod": 19124, "nome": "DIA A DIA 26"}, {"cod": 21563, "nome": "DIA A DIA 28"}, {"cod": 26903, "nome": "DIA A DIA 29"}, {"cod": 22358, "nome": "DIA A DIA 32"}, {"cod": 26901, "nome": "DIA A DIA 33"}, {"cod": 26904, "nome": "DIA A DIA 34"}, {"cod": 26905, "nome": "DIA A DIA 37"}, {"cod": 26906, "nome": "DIA A DIA 38"}, {"cod": 26337, "nome": "DIA A DIA 42"}, {"cod": 23729, "nome": "DIA A DIA 47"}, {"cod": 29945, "nome": "DIA A DIA 50"}, {"cod": 31815, "nome": "DIA A DIA 52"}, {"cod": 31109, "nome": "DIA A DIA 55"}, {"cod": 30727, "nome": "DIA A DIA 58"}, {"cod": 31110, "nome": "DIA A DIA 60"}, {"cod": 31113, "nome": "DIA A DIA 64"}, {"cod": 35001, "nome": "DIA A DIA 68"}, {"cod": 22750, "nome": "DIA A DIA ATACADOS 39"}, {"cod": 33070, "nome": "DIA DIA 65"}, {"cod": 15051, "nome": "DINAMITE ATAKAREJO LOJA 01"}, {"cod": 29698, "nome": "DINAMITE GAMELEIRA 08"}, {"cod": 30836, "nome": "DINAMITE QUIRINOPOLIS 09"}, {"cod": 13920, "nome": "DINAMITE SUPERMERCADO ATAIDES 3"}, {"cod": 23076, "nome": "DINAMITE SUPERMERCADO CORONEL VAIANO 6"}, {"cod": 25746, "nome": "DINAMITE SUPERMERCADO MARTINS 07"}, {"cod": 4236, "nome": "DINAMITE SUPERMERCADO VILA MARIA 02"}, {"cod": 15986, "nome": "DINAMITE SUPERMERCADOS LARANJEIRA 04"}, {"cod": 21264, "nome": "DVA ATACADOS 30"}, {"cod": 6815, "nome": "FLORESTA SUP"}, {"cod": 6504, "nome": "FLORESTA SUP I"}, {"cod": 8770, "nome": "FLORESTA SUP III"}, {"cod": 32062, "nome": "FOCO DISTRIBUICAO"}, {"cod": 32675, "nome": "GOIABAO - GOYA"}, {"cod": 23824, "nome": "GOIABAO SUPERMERCADO"}, {"cod": 20032, "nome": "GOIABAO SUPERMERCADO MAYSA"}, {"cod": 5274, "nome": "HIPER BATISTA"}, {"cod": 13320, "nome": "IPANEMA ATACADISTA"}, {"cod": 3735, "nome": "MASTER ATACADO"}, {"cod": 31131, "nome": "MAX ATACADISTA"}, {"cod": 32160, "nome": "MAX ATACADISTA"}, {"cod": 32514, "nome": "MAX ATACADISTA"}, {"cod": 33968, "nome": "MAX ATACADISTA"}, {"cod": 34041, "nome": "MAX ATACADISTA"}, {"cod": 25533, "nome": "MAX ATACADO - APARECIDA"}, {"cod": 25532, "nome": "MAX SUPERMERCADOS - RSD RIO VERDE"}, {"cod": 32142, "nome": "MERCADAO DA ECONOMIA  JARAGUA"}, {"cod": 28483, "nome": "MERCADAO DA ECONOMIA  LJ-CRISTALINA"}, {"cod": 22837, "nome": "MERCADAO DA ECONOMIA - CALDAS NOVAS"}, {"cod": 16867, "nome": "MERCADAO DA ECONOMIA - CATALAO"}, {"cod": 20887, "nome": "MERCADAO DA ECONOMIA - GOIATUBA"}, {"cod": 20886, "nome": "MERCADAO DA ECONOMIA - IPORA"}, {"cod": 24143, "nome": "MERCADAO DA ECONOMIA - ITUMBIARA"}, {"cod": 22835, "nome": "MERCADAO DA ECONOMIA - JATAI LJ 01"}, {"cod": 22838, "nome": "MERCADAO DA ECONOMIA - JATAI LJ 02"}, {"cod": 24144, "nome": "MERCADAO DA ECONOMIA - JATAI VL FATIMA"}, {"cod": 16337, "nome": "MERCADAO DA ECONOMIA - MINEIROS LJ 1"}, {"cod": 15435, "nome": "MERCADAO DA ECONOMIA - MINEIROS LJ 2"}, {"cod": 22836, "nome": "MERCADAO DA ECONOMIA - MORRINHOS"}, {"cod": 33652, "nome": "MERCADAO DA ECONOMIA - RIO VERDE"}, {"cod": 28218, "nome": "MERCADAO DA ECONOMIA ITABERAI"}, {"cod": 30188, "nome": "MERCADAO DA ECONOMIA LOJA 04 JATAI GO"}, {"cod": 28219, "nome": "MERCADAO DA ECONOMIA PIRACANJUBA"}, {"cod": 29052, "nome": "MERCADAO DA ECONOMIA QUIRINOPOLIS"}, {"cod": 22839, "nome": "MERCADO ECONOMIA - CATALAO LJ 2"}, {"cod": 17080, "nome": "MULTICANAL ATACADO"}, {"cod": 33165, "nome": "MX COMERCIO ATACADISTA LTDA"}, {"cod": 5110, "nome": "PEROLA SUP"}, {"cod": 6525, "nome": "PEROLA SUP II"}, {"cod": 18793, "nome": "PRO BRAZILIAN PQ AMAZONAS"}, {"cod": 27971, "nome": "RD ATACADISTA"}, {"cod": 22142, "nome": "RD COM. ATACADISTA DE ALIMENTOS"}, {"cod": 731, "nome": "REDE JAIME"}, {"cod": 23434, "nome": "REDE LUCAS DE SUPERMERCADOS"}, {"cod": 29014, "nome": "REDE LUCAS DE SUPERMERCADOS"}, {"cod": 29017, "nome": "REDE LUCAS DE SUPERMERCADOS"}, {"cod": 29018, "nome": "REDE LUCAS DE SUPERMERCADOS"}, {"cod": 29019, "nome": "REDE LUCAS DE SUPERMERCADOS"}, {"cod": 29015, "nome": "REDE LUCAS DE SUPERMERCADOS 04"}, {"cod": 29016, "nome": "REDE LUCAS DE SUPERMERCADOS 05"}, {"cod": 32233, "nome": "REDE MAE SUPERMERCADO"}, {"cod": 33734, "nome": "REDE MAE SUPERMERCADO"}, {"cod": 25711, "nome": "REDE MEGA DE SUP - TRINDADE"}, {"cod": 25620, "nome": "REDE MEGA DE SUPERM. BALNEARIO"}, {"cod": 25619, "nome": "REDE MEGA DE SUPERM. FINSOCIAL"}, {"cod": 25621, "nome": "REDE MEGA DE SUPERMERCADOS"}, {"cod": 25714, "nome": "REDE MEGA DE SUPERMERCADOS"}, {"cod": 25715, "nome": "REDE MEGA DE SUPERMERCADOS"}, {"cod": 25551, "nome": "REDE MEGA SUPERMERCADOS"}, {"cod": 31591, "nome": "REDE PACOCA DE SUPERMERCADOS"}, {"cod": 24634, "nome": "RIO VERMELHO ATACADO E VAREJO"}, {"cod": 25574, "nome": "RIO VERMELHO ATACADO E VAREJO"}, {"cod": 29686, "nome": "RIO VERMELHO ATACADO E VAREJO"}, {"cod": 29013, "nome": "ROJAO ATACADISTA"}, {"cod": 6518, "nome": "SIM ATACADO - COLORADO"}, {"cod": 24505, "nome": "SIM ATACADO - GARAVELO"}, {"cod": 9500, "nome": "SIM ATACADO - GOIA"}, {"cod": 9416, "nome": "STORE APARECIDA"}, {"cod": 27096, "nome": "STORE APARECIDA 2"}, {"cod": 15510, "nome": "STORE BELA VISTA"}, {"cod": 760, "nome": "STORE CAMPINAS"}, {"cod": 8446, "nome": "STORE FAMA"}, {"cod": 33631, "nome": "STORE LORENA PARK"}, {"cod": 4885, "nome": "STORE NORTE"}, {"cod": 4874, "nome": "STORE PLAZA"}, {"cod": 22764, "nome": "STORE RIO VERDE"}, {"cod": 16343, "nome": "STORE SHOPPING AMERICA"}, {"cod": 8034, "nome": "STORE ST DOS AFONSOS"}, {"cod": 34879, "nome": "STORE TRANSPORTES"}, {"cod": 763, "nome": "STORE TRINDADE"}, {"cod": 21390, "nome": "STORE TRINDADE 2"}, {"cod": 1164, "nome": "SUP PRO BRASILIAN AEROPORTO - LJ 01"}, {"cod": 1424, "nome": "SUP PRO BRASILIAN BALNEARIO - LJ 04"}, {"cod": 1142, "nome": "SUP PRO BRASILIAN VL NOVA - LJ 02"}, {"cod": 676, "nome": "SUP PRO BRAZILIAN - T 9 - LJ 03"}, {"cod": 9342, "nome": "SUP REIS LOJA 05"}, {"cod": 9343, "nome": "SUP REIS LOJA 09"}, {"cod": 24963, "nome": "SUP REIS LOJA 15"}, {"cod": 24964, "nome": "SUP REIS LOJA 16"}, {"cod": 9396, "nome": "SUP REIS LOJA 2"}, {"cod": 9277, "nome": "SUP REIS MORRINHOS LOJA 6"}, {"cod": 9278, "nome": "SUP REIS RIO VERDE LOJA 04"}, {"cod": 7959, "nome": "SUPER BIG BOX SUP"}, {"cod": 28349, "nome": "SUPER MAX"}, {"cod": 4900, "nome": "SUPER STORE URIAS"}, {"cod": 11525, "nome": "SUPER VIVENDAS LJ 4"}, {"cod": 32932, "nome": "SUPERMAX"}, {"cod": 34493, "nome": "SUPERMERCADO BIG BOX BIG12 208N"}, {"cod": 12971, "nome": "SUPERMERCADO BRASIL"}, {"cod": 23605, "nome": "SUPERMERCADO BRASIL"}, {"cod": 29752, "nome": "SUPERMERCADO BRASIL"}, {"cod": 33146, "nome": "SUPERMERCADO BRASIL"}, {"cod": 22225, "nome": "SUPERMERCADO BRASIL LJ 01"}, {"cod": 22224, "nome": "SUPERMERCADO BRASIL LJ 03"}, {"cod": 22226, "nome": "SUPERMERCADO BRASIL LJ 05"}, {"cod": 30694, "nome": "SUPERMERCADO BRETAS"}, {"cod": 3282, "nome": "SUPERMERCADO DO POVO"}, {"cod": 24511, "nome": "SUPERMERCADO DO POVO"}, {"cod": 34126, "nome": "SUPERMERCADO DO POVO ATACAREJO"}, {"cod": 23852, "nome": "SUPERMERCADO PRATIKO LJ 08"}, {"cod": 25807, "nome": "SUPERMERCADO PRO BRAZILIAN"}, {"cod": 20375, "nome": "SUPERMERCADO PRO-BRAZILIAN - JD ATLANTIC"}, {"cod": 30652, "nome": "SUPERMERCADO REIS"}, {"cod": 30657, "nome": "SUPERMERCADO REIS"}, {"cod": 30659, "nome": "SUPERMERCADO REIS"}, {"cod": 30660, "nome": "SUPERMERCADO REIS"}, {"cod": 33597, "nome": "SUPERMERCADO REIS"}, {"cod": 33598, "nome": "SUPERMERCADO REIS"}, {"cod": 33599, "nome": "SUPERMERCADO REIS"}, {"cod": 33600, "nome": "SUPERMERCADO REIS"}, {"cod": 33601, "nome": "SUPERMERCADO REIS"}, {"cod": 33602, "nome": "SUPERMERCADO REIS"}, {"cod": 33940, "nome": "SUPERMERCADO REIS"}, {"cod": 10838, "nome": "SUPERMERCADO REIS LOJA 03"}, {"cod": 9362, "nome": "SUPERMERCADO REIS LOJA 08"}, {"cod": 15032, "nome": "SUPERMERCADO REIS LOJA 11"}, {"cod": 16643, "nome": "SUPERMERCADO REIS LOJA 12"}, {"cod": 17092, "nome": "SUPERMERCADO REIS LOJA 13"}, {"cod": 9363, "nome": "SUPERMERCADO REIS LOJA 7"}, {"cod": 9164, "nome": "SUPERMERCADO REIS MATRIZ"}, {"cod": 30655, "nome": "SUPERMERCADOS REIS"}, {"cod": 12676, "nome": "SUPERMERCADOS REIS 10 LOJA 10"}, {"cod": 29691, "nome": "SUPERVI"}, {"cod": 32287, "nome": "SUPERVI"}, {"cod": 21769, "nome": "SUPERVI - CIDADE JARDIM"}, {"cod": 6537, "nome": "SUPERVI 02"}, {"cod": 6538, "nome": "SUPERVI 03"}, {"cod": 6496, "nome": "SUPERVI 04"}, {"cod": 6539, "nome": "SUPERVI 05"}, {"cod": 6540, "nome": "SUPERVI 06"}, {"cod": 6519, "nome": "SUPERVI 07"}, {"cod": 6541, "nome": "SUPERVI 08"}, {"cod": 6542, "nome": "SUPERVI 09"}, {"cod": 6543, "nome": "SUPERVI 11"}, {"cod": 6544, "nome": "SUPERVI 12"}, {"cod": 6547, "nome": "SUPERVI 13"}, {"cod": 6595, "nome": "SUPERVI 14"}, {"cod": 17381, "nome": "SUPERVI GOIANIA LOJA 01"}, {"cod": 33183, "nome": "SUPERVI PREMIUM"}, {"cod": 31227, "nome": "SUPERVI SUPERMERCADOS LOJA 017"}, {"cod": 17521, "nome": "TATICO AGUAS LINDAS 1"}, {"cod": 22420, "nome": "TATICO AGUAS LINDAS 2"}, {"cod": 33256, "nome": "TATICO CEILANDIA SUL"}, {"cod": 33258, "nome": "TATICO EPTG"}, {"cod": 25278, "nome": "TATICO LUZIANIA"}, {"cod": 33255, "nome": "TATICO RECANTO"}, {"cod": 33252, "nome": "TATICO SAMAMBAIA NORTE"}, {"cod": 33253, "nome": "TATICO SAMAMBAIA SUL"}, {"cod": 33254, "nome": "TATICO SANTA MARIA"}, {"cod": 34581, "nome": "TATICO SOBRADINHO"}, {"cod": 33257, "nome": "TATICO VICENTE PIRES"}, {"cod": 35103, "nome": "ULTRABOX"}, {"cod": 34274, "nome": "ULTRABOX  - AGUAS LINDAS"}, {"cod": 35098, "nome": "ULTRABOX -  ULT11-ITAPOA"}, {"cod": 34273, "nome": "ULTRABOX - PLANALTINA GO"}, {"cod": 35092, "nome": "ULTRABOX - ULT01-PLANDF"}, {"cod": 35106, "nome": "ULTRABOX - ULT02-GAMA"}, {"cod": 35093, "nome": "ULTRABOX - ULT03-COL"}, {"cod": 35094, "nome": "ULTRABOX - ULT04-CEIS"}, {"cod": 35095, "nome": "ULTRABOX - ULT05-PLJK"}, {"cod": 35096, "nome": "ULTRABOX - ULT06-SOB"}, {"cod": 35112, "nome": "ULTRABOX - ULT07-ADE"}, {"cod": 19576, "nome": "ULTRABOX - ULT08 - ARAP"}, {"cod": 35110, "nome": "ULTRABOX - ULT10-ESTR"}, {"cod": 35099, "nome": "ULTRABOX - ULT12-SAOSEB"}, {"cod": 35108, "nome": "ULTRABOX - ULT15-SOLNA"}, {"cod": 35104, "nome": "ULTRABOX - ULT17-SAMAMB"}, {"cod": 35101, "nome": "ULTRABOX - ULT18-BRAZL"}, {"cod": 35107, "nome": "ULTRABOX - ULT19-VIAPARK"}, {"cod": 35109, "nome": "ULTRABOX - ULT20-TAGS"}, {"cod": 35111, "nome": "ULTRABOX - ULT22-VIPIRES"}, {"cod": 35102, "nome": "ULTRABOX - ULT23-SMARIA"}, {"cod": 35105, "nome": "ULTRABOX - ULT24-PBRASI"}, {"cod": 35067, "nome": "ULTRABOX -CIDADE OCIDENTAL"}, {"cod": 35100, "nome": "ULTRABOX ATACADO E VAREJO"}, {"cod": 32282, "nome": "VILEFORT"}, {"cod": 19422, "nome": "VILLEFORT"}, {"cod": 33207, "nome": "VILLEFORT ANAPOLIS LJ 02"}, {"cod": 28325, "nome": "VILLEFORT GYN 1"}, {"cod": 32281, "nome": "VILLEFORT LOJA 02 GOIANIA"}, {"cod": 30449, "nome": "VISAO ALIMENTOS"}, {"cod": 34791, "nome": "VISAO ALIMENTOS"}, {"cod": 34432, "nome": "VIVENDAS AGUAS"}, {"cod": 34408, "nome": "VIVENDAS ARBS"}, {"cod": 34434, "nome": "VIVENDAS CAMPING"}, {"cod": 34430, "nome": "VIVENDAS JARDIM"}, {"cod": 34424, "nome": "VIVENDAS LUZ"}, {"cod": 34441, "nome": "VIVENDAS NSF 280"}, {"cod": 34425, "nome": "VIVENDAS NSF 304"}, {"cod": 34407, "nome": "VIVENDAS NSF MATRIZ"}, {"cod": 34439, "nome": "VIVENDAS NSF02"}, {"cod": 34411, "nome": "VIVENDAS NSM 105"}, {"cod": 34397, "nome": "VIVENDAS NSM 209"}, {"cod": 34398, "nome": "VIVENDAS NSM MATR"}, {"cod": 34393, "nome": "VIVENDAS NSM ST MARIA"}, {"cod": 34436, "nome": "VIVENDAS NSP MATRIZ"}, {"cod": 34396, "nome": "VIVENDAS NSP QD10"}, {"cod": 34402, "nome": "VIVENDAS NSP QD7"}, {"cod": 34438, "nome": "VIVENDAS NSP02"}, {"cod": 34409, "nome": "VIVENDAS RAWL"}, {"cod": 34412, "nome": "VIVENDAS SARW"}, {"cod": 34440, "nome": "VIVENDAS SR02"}, {"cod": 34423, "nome": "VIVENDAS STMJ 02"}, {"cod": 34427, "nome": "VIVENDAS STMJ 03"}, {"cod": 34433, "nome": "VIVENDAS STMJ 04"}, {"cod": 34435, "nome": "VIVENDAS STMJ MATR"}, {"cod": 34413, "nome": "VIVENDAS VS"}, {"cod": 34399, "nome": "VIVENDAS WBBL"}, {"cod": 11526, "nome": "VIVENDAS WBL"}, {"cod": 34426, "nome": "VIVENDASL LUNA ATAC"}], "gerado": "2026-10-26 22:57:11", "data": "26/10/2026"};
+
+const KEY_STATUS = "perfil_shelflife_status";
+const KEY_EXTRA = "perfil_shelflife_extra";
+const KEY_ORDENS = "perfil_shelflife_ordens";
+const KEY_META = "perfil_shelflife_meta";
+
+let filtroStatus = "todos";
+let pendingInapto = null;
+let toastTimer = null;
+let runtime = {
+  ordens: [],
+  shelf_all: [],
+  meta: { source: "seed", loadedAt: null, fileName: null }
+};
+
+function loadStatus() {
+  try { return JSON.parse(localStorage.getItem(KEY_STATUS) || "{}"); }
+  catch (e) { return {}; }
+}
+function saveStatus(obj) { localStorage.setItem(KEY_STATUS, JSON.stringify(obj)); }
+function loadExtra() {
+  try { return JSON.parse(localStorage.getItem(KEY_EXTRA) || "[]"); }
+  catch (e) { return []; }
+}
+function saveExtra(arr) { localStorage.setItem(KEY_EXTRA, JSON.stringify(arr)); }
+
+function getStatus(cod) {
+  return loadStatus()[String(cod)] === "inapto" ? "inapto" : "apto";
+}
+function setStatus(cod, status) {
+  const s = loadStatus();
+  if (status === "apto") delete s[String(cod)];
+  else s[String(cod)] = "inapto";
+  saveStatus(s);
+}
+function isApto(cod) { return getStatus(cod) === "apto"; }
+
+function getCadastro() {
+  const map = {};
+  runtime.shelf_all.forEach(function (c) { map[c.cod] = { cod: c.cod, nome: c.nome }; });
+  loadExtra().forEach(function (c) { map[c.cod] = { cod: c.cod, nome: c.nome }; });
+  return Object.values(map).sort(function (a, b) {
+    return a.nome.localeCompare(b.nome, "pt-BR");
+  });
+}
+
+function getShelfCodes() {
+  const set = {};
+  runtime.shelf_all.forEach(function (c) { set[c.cod] = true; });
+  return set;
+}
+
+function escAttr(s) { return String(s).replace(/\\/g, "\\\\").replace(/'/g, "\\'"); }
+function escHtml(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function toast(msg, ok) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = "toast is-show" + (ok ? " is-ok" : "");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { el.classList.remove("is-show"); }, 2800);
+}
+
+function initRuntime() {
+  runtime.shelf_all = DATA_SEED.shelf_all.slice();
+  let stored = null;
+  try { stored = JSON.parse(localStorage.getItem(KEY_ORDENS) || "null"); } catch (e) { stored = null; }
+  let meta = null;
+  try { meta = JSON.parse(localStorage.getItem(KEY_META) || "null"); } catch (e) { meta = null; }
+
+  if (stored && Array.isArray(stored) && stored.length) {
+    runtime.ordens = stored;
+    runtime.meta = meta || { source: "localStorage", loadedAt: null, fileName: null };
+  } else {
+    runtime.ordens = JSON.parse(JSON.stringify(DATA_SEED.ordens));
+    runtime.meta = {
+      source: "seed",
+      loadedAt: DATA_SEED.gerado || null,
+      fileName: "Pedidos inicial (embutido)"
+    };
+  }
+  updateUploadInfo();
+}
+
+function persistOrdens() {
+  localStorage.setItem(KEY_ORDENS, JSON.stringify(runtime.ordens));
+  localStorage.setItem(KEY_META, JSON.stringify(runtime.meta));
+}
+
+function updateUploadInfo() {
+  const el = document.getElementById("uploadInfo");
+  if (!el) return;
+  const m = runtime.meta || {};
+  if (m.source === "seed") {
+    el.className = "warn";
+    el.textContent = "dados iniciais do sistema" + (m.loadedAt ? " · " + m.loadedAt : "");
+  } else {
+    el.className = "ok";
+    el.textContent = (m.fileName || "Pedidos.xls") +
+      (m.loadedAt ? " · carregado em " + m.loadedAt : "") +
+      " · " + runtime.ordens.length + " ordem(ns)";
+  }
+}
+
+function mostrarView(nome) {
+  document.getElementById("viewOrdens").classList.toggle("is-active", nome === "ordens");
+  document.getElementById("viewCadastro").classList.toggle("is-active", nome === "cadastro");
+  const bO = document.getElementById("btnOrdens");
+  const bC = document.getElementById("btnCadastro");
+  bO.classList.toggle("is-active", nome === "ordens");
+  bC.classList.toggle("is-active", nome === "cadastro");
+  bO.setAttribute("aria-pressed", nome === "ordens" ? "true" : "false");
+  bC.setAttribute("aria-pressed", nome === "cadastro" ? "true" : "false");
+  if (nome === "cadastro") renderCadastro();
+  if (nome === "ordens") renderOrdens();
+  updateStats();
+}
+
+function setFiltroStatus(f) {
+  filtroStatus = f;
+  document.getElementById("filtroTodos").classList.toggle("is-active", f === "todos");
+  document.getElementById("filtroAptos").classList.toggle("is-active", f === "apto");
+  document.getElementById("filtroInaptos").classList.toggle("is-active", f === "inapto");
+  renderCadastro();
+}
+
+function renderCadastro() {
+  const q = (document.getElementById("cadSearch").value || "").toLowerCase().trim();
+  const body = document.getElementById("cadastroBody");
+  const lista = getCadastro();
+  let html = "";
+  lista.forEach(function (c) {
+    const st = getStatus(c.cod);
+    if (filtroStatus !== "todos" && st !== filtroStatus) return;
+    if (q && String(c.cod).indexOf(q) === -1 && c.nome.toLowerCase().indexOf(q) === -1) return;
+    const rowCls = st === "inapto" ? " is-inapto" : "";
+    const stHtml = st === "apto"
+      ? '<span class="status status--apto">Apto</span>'
+      : '<span class="status status--inapto">Inapto</span>';
+    const acao = st === "apto"
+      ? '<button type="button" class="btn btn--sm btn--danger" onclick="pedirInapto(' + c.cod + ",'" + escAttr(c.nome) + "')\">Excluir (Inapto)</button>"
+      : '<button type="button" class="btn btn--sm btn--primary" onclick="tornarApto(' + c.cod + ')">Tornar Apto</button>';
+    html +=
+      '<tr class="' + rowCls.trim() + '">' +
+      '<td class="cod" data-label="Código">' + c.cod + "</td>" +
+      '<td class="nome" data-label="Nome">' + escHtml(c.nome) + "</td>" +
+      '<td data-label="Status">' + stHtml + "</td>" +
+      '<td class="no-print td-action">' + acao + "</td></tr>";
+  });
+  body.innerHTML = html || '<tr><td colspan="4"><div class="empty">Nenhum cliente encontrado.</div></td></tr>';
+  updateStats();
+}
+
+function pedirInapto(cod, nome) {
+  pendingInapto = cod;
+  document.getElementById("confirmMsg").innerHTML =
+    "Deseja marcar <strong>" + cod + " — " + escHtml(nome) +
+    "</strong> como <strong>Inapto</strong>?<br><br>Ele <u>não será exibido</u> nas Ordens de Carga.";
+  openModal("modalConfirm");
+}
+function confirmarInapto() {
+  if (pendingInapto != null) {
+    setStatus(pendingInapto, "inapto");
+    toast("Cliente marcado como Inapto", true);
+    pendingInapto = null;
+  }
+  closeModal("modalConfirm");
+  renderCadastro(); renderOrdens(); updateStats();
+}
+function tornarApto(cod) {
+  setStatus(cod, "apto");
+  toast("Cliente restaurado como Apto", true);
+  renderCadastro(); renderOrdens(); updateStats();
+}
+function abrirIncluir() {
+  document.getElementById("incluirCod").value = "";
+  document.getElementById("incluirNome").value = "";
+  openModal("modalIncluir");
+  setTimeout(function () { document.getElementById("incluirCod").focus(); }, 40);
+}
+function incluirCliente() {
+  const codStr = document.getElementById("incluirCod").value.trim();
+  const nome = document.getElementById("incluirNome").value.trim();
+  if (!codStr || !nome) { toast("Preencha código e nome"); return; }
+  const cod = Number(codStr);
+  if (!cod) { toast("Código inválido"); return; }
+  const extra = loadExtra();
+  const exists = getCadastro().some(function (c) { return c.cod === cod; });
+  if (exists) setStatus(cod, "apto");
+  else { extra.push({ cod: cod, nome: nome }); saveExtra(extra); setStatus(cod, "apto"); }
+  closeModal("modalIncluir");
+  toast("Cliente incluído como Apto", true);
+  renderCadastro(); renderOrdens(); updateStats();
+}
+function openModal(id) { document.getElementById(id).classList.add("is-open"); }
+function closeModal(id) { document.getElementById(id).classList.remove("is-open"); }
+
+function renderOrdens() {
+  const q = (document.getElementById("searchOrdens").value || "").toLowerCase().trim();
+  const list = document.getElementById("ordensList");
+  let totalClientes = 0, totalOrdens = 0, html = "";
+
+  runtime.ordens.forEach(function (o) {
+    const vis = o.clientes.filter(function (c) { return isApto(c.cod); });
+    if (!vis.length) return;
+    const hay = (o.ordem + " " + vis.map(function (c) { return c.cod + " " + c.nome; }).join(" ")).toLowerCase();
+    if (q && hay.indexOf(q) === -1) return;
+    totalOrdens++;
+    totalClientes += vis.length;
+    const nLabel = vis.length === 1 ? "1 cliente" : vis.length + " clientes";
+
+    let items = "";
+    vis.forEach(function (c) {
+      items +=
+        '<li class="client-list__item">' +
+        '<span class="client-list__cod">' + c.cod + "</span>" +
+        '<span class="client-list__nome">' + escHtml(c.nome) + "</span>" +
+        "</li>";
+    });
+
+    html +=
+      '<article class="order is-open" data-ordem="' + o.ordem + '">' +
+      '<div class="order__head" role="button" tabindex="0" aria-expanded="true" ' +
+      'onclick="toggleOrder(this)" onkeydown="orderKey(event,this)">' +
+      '<div class="order__head-left">' +
+      '<span class="order__chev" aria-hidden="true">▶</span>' +
+      '<span class="order__id">' + o.ordem + "</span>" +
+      "</div>" +
+      '<span class="order__badge">' + nLabel + "</span>" +
+      "</div>" +
+      '<div class="order__body"><ul class="client-list">' + items + "</ul></div>" +
+      "</article>";
+  });
+
+  list.innerHTML = html || '<div class="empty">Nenhum cliente apto encontrado nas ordens.</div>';
+  document.getElementById("statOrdens").textContent = totalOrdens;
+  document.getElementById("statClientes").textContent = totalClientes;
+}
+
+function toggleOrder(el) {
+  const card = el.parentElement;
+  card.classList.toggle("is-open");
+  el.setAttribute("aria-expanded", card.classList.contains("is-open") ? "true" : "false");
+}
+function orderKey(e, el) {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleOrder(el); }
+}
+function updateStats() {
+  let aptos = 0, inaptos = 0;
+  getCadastro().forEach(function (c) { if (isApto(c.cod)) aptos++; else inaptos++; });
+  document.getElementById("statAptos").textContent = aptos;
+  document.getElementById("statInaptos").textContent = inaptos;
+}
+function expandirTodos() {
+  document.querySelectorAll(".order").forEach(function (c) {
+    c.classList.add("is-open");
+    const h = c.querySelector(".order__head");
+    if (h) h.setAttribute("aria-expanded", "true");
+  });
+}
+function recolherTodos() {
+  document.querySelectorAll(".order").forEach(function (c) {
+    c.classList.remove("is-open");
+    const h = c.querySelector(".order__head");
+    if (h) h.setAttribute("aria-expanded", "false");
+  });
+}
+
+function buildBackupPayload() {
+  const lista = getCadastro();
+  return {
+    data: new Date().toISOString(),
+    meta: runtime.meta,
+    cadastro: lista.map(function (c) {
+      return { cod: c.cod, nome: c.nome, status: getStatus(c.cod) };
+    }),
+    status: loadStatus(),
+    extra: loadExtra(),
+    ordens: runtime.ordens,
+    ordens_aptos: runtime.ordens.map(function (o) {
+      return {
+        ordem: o.ordem,
+        clientes: o.clientes.filter(function (c) { return isApto(c.cod); })
+      };
+    })
+  };
+}
+
+function downloadBlob(blob, filename) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/** @param {boolean} silent - se true, não mostra toast (usado no upload) */
+function salvarBackup(silent) {
+  const payload = buildBackupPayload();
+  const day = new Date().toISOString().slice(0, 10);
+  const time = new Date().toTimeString().slice(0, 8).replace(/:/g, "");
+  const stamp = day + "_" + time;
+
+  const lines = [];
+  lines.push("BACKUP PERFIL CLIENTE SHELFLIFE");
+  lines.push("Data: " + new Date().toLocaleString("pt-BR"));
+  lines.push("Origem pedidos: " + ((runtime.meta && runtime.meta.fileName) || "—"));
+  lines.push("");
+  lines.push("=== CADASTRO ===");
+  lines.push("Código;Nome;Status");
+  payload.cadastro.forEach(function (c) {
+    lines.push(c.cod + ";" + c.nome + ";" + c.status);
+  });
+  lines.push("");
+  lines.push("=== ORDENS (somente aptos) ===");
+  lines.push("Ordem de carga;Código;Nome");
+  payload.ordens_aptos.forEach(function (o) {
+    o.clientes.forEach(function (c) {
+      lines.push(o.ordem + ";" + c.cod + ";" + c.nome);
+    });
+  });
+
+  downloadBlob(new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" }), "backup_shelflife_" + stamp + ".csv");
+  downloadBlob(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }), "backup_shelflife_" + stamp + ".json");
+  if (!silent) toast("Backup salvo (CSV + JSON)", true);
+}
+
+function normalizeHeader(h) {
+  return String(h || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function findCol(headers, candidates) {
+  const norm = headers.map(normalizeHeader);
+  for (let i = 0; i < candidates.length; i++) {
+    const c = normalizeHeader(candidates[i]);
+    const idx = norm.indexOf(c);
+    if (idx !== -1) return idx;
+  }
+  for (let i = 0; i < candidates.length; i++) {
+    const c = normalizeHeader(candidates[i]);
+    for (let j = 0; j < norm.length; j++) {
+      if (norm[j].indexOf(c) !== -1) return j;
+    }
+  }
+  return -1;
+}
+
+function parsePedidosWorkbook(workbook) {
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "", raw: false });
+  if (!rows.length) throw new Error("Planilha vazia");
+
+  // Detect header row (look for "Ordem de carga" / "Parceiro")
+  let headerRow = -1;
+  for (let i = 0; i < Math.min(rows.length, 15); i++) {
+    const joined = rows[i].map(normalizeHeader).join("|");
+    if (joined.indexOf("ordem") !== -1 && (joined.indexOf("parceiro") !== -1 || joined.indexOf("nome") !== -1)) {
+      headerRow = i;
+      break;
+    }
+  }
+  if (headerRow === -1) {
+    // fallback: row with most non-empty cells among first 10
+    let best = 0, bestCount = 0;
+    for (let i = 0; i < Math.min(rows.length, 10); i++) {
+      const c = rows[i].filter(function (x) { return String(x).trim() !== ""; }).length;
+      if (c > bestCount) { bestCount = c; best = i; }
+    }
+    headerRow = best;
+  }
+
+  const headers = rows[headerRow].map(String);
+  const colOrdem = findCol(headers, ["Ordem de carga", "Ordem de Carga", "ordem de carga", "Ordem"]);
+  const colParc = findCol(headers, ["Parceiro", "CODPARC", "Cod. Parceiro", "Código Parceiro"]);
+  const colNome = findCol(headers, ["Nome Parceiro (Parceiro)", "Nome Parceiro", "NOMEPARC", "Nome"]);
+
+  if (colOrdem === -1 || colParc === -1) {
+    throw new Error("Não encontrei colunas 'Ordem de carga' e/ou 'Parceiro' na planilha.");
+  }
+
+  const shelf = getShelfCodes();
+  const byOrdem = {};
+
+  for (let r = headerRow + 1; r < rows.length; r++) {
+    const row = rows[r];
+    if (!row || !row.length) continue;
+    let ordemRaw = row[colOrdem];
+    let parcRaw = row[colParc];
+    if (ordemRaw === "" || ordemRaw == null || parcRaw === "" || parcRaw == null) continue;
+
+    let ordem = String(ordemRaw).trim();
+    // "11467000.0" -> "11467000"
+    if (/^\d+(\.0+)?$/.test(ordem)) ordem = String(parseInt(ordem, 10));
+
+    const cod = parseInt(String(parcRaw).replace(/[^\d]/g, ""), 10);
+    if (!cod || !shelf[cod]) continue;
+
+    let nome = colNome !== -1 ? String(row[colNome] || "").trim() : "";
+    if (!nome) {
+      const found = runtime.shelf_all.find(function (c) { return c.cod === cod; });
+      nome = found ? found.nome : ("Cliente " + cod);
+    }
+
+    if (!byOrdem[ordem]) byOrdem[ordem] = {};
+    byOrdem[ordem][cod] = nome;
+  }
+
+  const ordens = Object.keys(byOrdem)
+    .sort(function (a, b) {
+      const na = parseInt(a, 10), nb = parseInt(b, 10);
+      if (!isNaN(na) && !isNaN(nb)) return na - nb;
+      return String(a).localeCompare(String(b));
+    })
+    .map(function (ordem) {
+      const clientes = Object.keys(byOrdem[ordem])
+        .map(function (k) { return { cod: Number(k), nome: byOrdem[ordem][k] }; })
+        .sort(function (a, b) { return a.nome.localeCompare(b.nome, "pt-BR"); });
+      return { ordem: ordem, clientes: clientes, num: clientes.length };
+    });
+
+  return ordens;
+}
+
+function onPedidosFile(file) {
+  if (!file) return;
+  if (typeof XLSX === "undefined") {
+    toast("Biblioteca de Excel não carregou. Verifique a internet.");
+    return;
+  }
+
+  const btn = document.getElementById("btnUploadPedidos");
+  btn.disabled = true;
+
+  // 1) Backup automático do estado ATUAL antes de substituir
+  try {
+    salvarBackup(true);
+  } catch (e) {
+    console.warn(e);
+  }
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const ordens = parsePedidosWorkbook(workbook);
+
+      // 2) Substitui TODOS os pedidos antigos
+      runtime.ordens = ordens;
+      runtime.meta = {
+        source: "upload",
+        loadedAt: new Date().toLocaleString("pt-BR"),
+        fileName: file.name
+      };
+      persistOrdens();
+      updateUploadInfo();
+      renderOrdens();
+      updateStats();
+
+      toast(
+        "Backup salvo · Pedidos substituídos (" + ordens.length + " ordens com shelflife)",
+        true
+      );
+    } catch (err) {
+      console.error(err);
+      toast("Erro ao ler planilha: " + (err.message || err));
+    } finally {
+      btn.disabled = false;
+      document.getElementById("filePedidos").value = "";
+    }
+  };
+  reader.onerror = function () {
+    toast("Falha ao ler o arquivo");
+    btn.disabled = false;
+    document.getElementById("filePedidos").value = "";
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+document.getElementById("filePedidos").addEventListener("change", function (e) {
+  const f = e.target.files && e.target.files[0];
+  if (f) onPedidosFile(f);
+});
+
+document.querySelectorAll(".modal-backdrop").forEach(function (el) {
+  el.addEventListener("click", function (e) {
+    if (e.target === el) el.classList.remove("is-open");
+  });
+});
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape") {
+    document.querySelectorAll(".modal-backdrop.is-open").forEach(function (m) {
+      m.classList.remove("is-open");
+    });
+  }
+});
+
+initRuntime();
+renderOrdens();
+updateStats();
+</script>
+</body>
+</html>
