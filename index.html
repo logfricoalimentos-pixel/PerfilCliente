@@ -148,6 +148,37 @@ a.skip:focus { left: .5rem; top: .5rem; }
 .banner-upload__meta .ok { color: var(--accent); }
 .banner-upload__meta .warn { color: var(--warn); }
 
+.date-filter {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+.date-filter label {
+  font-size: .75rem;
+  font-weight: 650;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.date-filter input[type="date"] {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  padding: .45rem .6rem;
+  font-size: .88rem;
+  font-family: inherit;
+  min-height: 40px;
+  color-scheme: dark;
+}
+.date-filter input[type="date"]:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--focus);
+}
+
+
 .stats-section {
   max-width: var(--max); margin: 0 auto; padding: .75rem var(--space) .15rem;
 }
@@ -495,7 +526,7 @@ tr.is-inapto td, tr.is-inapto .cod, tr.is-inapto .nome { color: var(--inapto) !i
       <h1 class="brand__title"><span aria-hidden="true">🚚</span> Ordens de Carga · Shelflife</h1>
       <p class="brand__sub">Código e nome dos clientes · Logfrico Alimentos</p>
     </div>
-    <div class="date-pill" id="dataHoje">📅 26/10/2026 · 23:12</div>
+    <div class="date-pill" id="dataHoje" title="Data e hora da última atualização">📅 Atualizado: —</div>
   </div>
 </header>
 
@@ -520,12 +551,16 @@ tr.is-inapto td, tr.is-inapto .cod, tr.is-inapto .nome { color: var(--inapto) !i
 
 <div class="banner-upload no-print">
   <div class="banner-upload__inner">
+    <div class="date-filter">
+      <label for="filtroData">Data das ordens</label>
+      <input type="date" id="filtroData" aria-label="Selecionar data das ordens">
+    </div>
     <div class="banner-upload__meta" id="uploadMeta">
-      <strong>Pedidos carregados:</strong>
-      <span id="uploadInfo" class="warn">dados iniciais do sistema</span>
+      <strong>Pedidos:</strong>
+      <span id="uploadInfo" class="warn">carregando…</span>
     </div>
     <div style="font-size:.75rem;color:var(--muted)">
-      Ao subir um novo <strong>Pedidos.xls</strong>, o sistema salva backup automático e <strong>substitui todos</strong> os pedidos antigos.
+      Padrão: <strong>hoje</strong>. Ao subir <strong>Pedidos.xls</strong>: backup + grava no Supabase na data selecionada.
     </div>
   </div>
 </div>
@@ -590,7 +625,7 @@ tr.is-inapto td, tr.is-inapto .cod, tr.is-inapto .nome { color: var(--inapto) !i
 </main>
 
 <footer class="app-footer">
-  Perfil Cliente · Gerado em 26/10/2026 23:12 · Upload diário de Pedidos.xls com backup automático
+  Perfil Cliente · <span id="footerUpdate">última atualização: —</span> · Pedidos.xls + Supabase
 </footer>
 
 <div class="modal-backdrop" id="modalIncluir" role="dialog" aria-modal="true" aria-labelledby="tituloIncluir">
@@ -623,7 +658,16 @@ tr.is-inapto td, tr.is-inapto .cod, tr.is-inapto .nome { color: var(--inapto) !i
 <script>
 const DATA_SEED = {"ordens": [{"ordem": "11467000", "clientes": [{"cod": 27334, "nome": "ATACADAO COSTA - LUZIÂNIA"}, {"cod": 15498, "nome": "ATACADAO COSTA - VALPARAISO"}, {"cod": 19690, "nome": "ATACADAO DIA A DIA 25"}, {"cod": 16358, "nome": "ATACADAO DIA A DIA LJ 13"}, {"cod": 31108, "nome": "ATACADAO DIA A DIA S A"}, {"cod": 28483, "nome": "MERCADAO DA ECONOMIA  LJ-CRISTALINA"}, {"cod": 25278, "nome": "TATICO LUZIANIA"}, {"cod": 33254, "nome": "TATICO SANTA MARIA"}, {"cod": 35095, "nome": "ULTRABOX - ULT05-PLJK"}, {"cod": 35102, "nome": "ULTRABOX - ULT23-SMARIA"}, {"cod": 35067, "nome": "ULTRABOX -CIDADE OCIDENTAL"}], "num": 11}, {"ordem": "11468000", "clientes": [{"cod": 6537, "nome": "SUPERVI 02"}, {"cod": 6496, "nome": "SUPERVI 04"}, {"cod": 6539, "nome": "SUPERVI 05"}], "num": 3}, {"ordem": "11469000", "clientes": [{"cod": 25244, "nome": "ATACADAO COSTA RIO VERDE"}, {"cod": 10508, "nome": "BRETAS - B524 - RIO VERDE"}, {"cod": 33652, "nome": "MERCADAO DA ECONOMIA - RIO VERDE"}, {"cod": 29017, "nome": "REDE LUCAS DE SUPERMERCADOS"}], "num": 4}, {"ordem": "11470000", "clientes": [{"cod": 31113, "nome": "DIA A DIA 64"}, {"cod": 20887, "nome": "MERCADAO DA ECONOMIA - GOIATUBA"}, {"cod": 24143, "nome": "MERCADAO DA ECONOMIA - ITUMBIARA"}, {"cod": 23434, "nome": "REDE LUCAS DE SUPERMERCADOS"}, {"cod": 29019, "nome": "REDE LUCAS DE SUPERMERCADOS"}, {"cod": 29015, "nome": "REDE LUCAS DE SUPERMERCADOS 04"}, {"cod": 29016, "nome": "REDE LUCAS DE SUPERMERCADOS 05"}, {"cod": 29013, "nome": "ROJAO ATACADISTA"}], "num": 8}, {"ordem": "11471000", "clientes": [{"cod": 17079, "nome": "ATACADAO DIA A DIA 15"}, {"cod": 7272, "nome": "CIGA  ALIMENTACAO"}], "num": 2}, {"ordem": "11472000", "clientes": [{"cod": 17080, "nome": "MULTICANAL ATACADO"}, {"cod": 1164, "nome": "SUP PRO BRASILIAN AEROPORTO - LJ 01"}], "num": 2}, {"ordem": "11473000", "clientes": [{"cod": 23729, "nome": "DIA A DIA 47"}], "num": 1}, {"ordem": "11474000", "clientes": [{"cod": 27192, "nome": "ATACADAO DIA A DIA FL 53"}, {"cod": 18793, "nome": "PRO BRAZILIAN PQ AMAZONAS"}, {"cod": 676, "nome": "SUP PRO BRAZILIAN - T 9 - LJ 03"}, {"cod": 20375, "nome": "SUPERMERCADO PRO-BRAZILIAN - JD ATLANTIC"}], "num": 4}, {"ordem": "11475000", "clientes": [{"cod": 19124, "nome": "DIA A DIA 26"}, {"cod": 33734, "nome": "REDE MAE SUPERMERCADO"}, {"cod": 12971, "nome": "SUPERMERCADO BRASIL"}], "num": 3}, {"ordem": "11476000", "clientes": [{"cod": 20032, "nome": "GOIABAO SUPERMERCADO MAYSA"}], "num": 1}], "shelf_all": [{"cod": 21396, "nome": "ARMAZEM ATACADO E DISTRIBUICAO"}, {"cod": 24635, "nome": "ARTE TRIGO"}, {"cod": 31010, "nome": "ASSAI  ATACADISTA 310 PORTUGUAL"}, {"cod": 18613, "nome": "ASSAI - 01 051 - S.I.A"}, {"cod": 18614, "nome": "ASSAI - 052 - CEILANDIA"}, {"cod": 18618, "nome": "ASSAI - 084 - INDEPENDENCIA"}, {"cod": 18615, "nome": "ASSAI - 117 - VALPARAÍSO"}, {"cod": 18620, "nome": "ASSAI - 140 - PERIMETRAL"}, {"cod": 34117, "nome": "ASSAI ATACADISTA 308 ASA NORTE"}, {"cod": 34400, "nome": "ASSAI BRASILIA PARK"}, {"cod": 20011, "nome": "ASSAI LJ  101 - TAGUATINGA  AREAL"}, {"cod": 34406, "nome": "ASSAI TAGUATINGA SHOPPING"}, {"cod": 21751, "nome": "ATACADAO COSTA  TRES MARIAS"}, {"cod": 24413, "nome": "ATACADAO COSTA - CENTRO"}, {"cod": 18689, "nome": "ATACADAO COSTA - JARDIM GOIAS"}, {"cod": 29183, "nome": "ATACADAO COSTA - LARANJEIRAS"}, {"cod": 27334, "nome": "ATACADAO COSTA - LUZIÂNIA"}, {"cod": 16018, "nome": "ATACADAO COSTA - PEDRO LUDOVICO"}, {"cod": 21926, "nome": "ATACADAO COSTA - ROSAS DE OURO"}, {"cod": 31123, "nome": "ATACADAO COSTA - SENADOR CANEDO"}, {"cod": 34655, "nome": "ATACADAO COSTA - TRINDADE"}, {"cod": 15498, "nome": "ATACADAO COSTA - VALPARAISO"}, {"cod": 25244, "nome": "ATACADAO COSTA RIO VERDE"}, {"cod": 17079, "nome": "ATACADAO DIA A DIA 15"}, {"cod": 17453, "nome": "ATACADAO DIA A DIA 16"}, {"cod": 18137, "nome": "ATACADAO DIA A DIA 18"}, {"cod": 18246, "nome": "ATACADAO DIA A DIA 19"}, {"cod": 19690, "nome": "ATACADAO DIA A DIA 25"}, {"cod": 21561, "nome": "ATACADAO DIA A DIA 27"}, {"cod": 31111, "nome": "ATACADAO DIA A DIA 63"}, {"cod": 27192, "nome": "ATACADAO DIA A DIA FL 53"}, {"cod": 16358, "nome": "ATACADAO DIA A DIA LJ 13"}, {"cod": 31108, "nome": "ATACADAO DIA A DIA S A"}, {"cod": 26339, "nome": "ATACADO COSTA 06 AGUAS CLARAS"}, {"cod": 17138, "nome": "ATACADO COSTA 51 TAGUATINGA"}, {"cod": 17139, "nome": "ATACADO COSTA 52 SANTA MARIA"}, {"cod": 17140, "nome": "ATACADO COSTA 53 ADE"}, {"cod": 21668, "nome": "ATACADO COSTA 55 TAQUARI"}, {"cod": 32134, "nome": "ATACADO PADRAO"}, {"cod": 34491, "nome": "BIG BOX SUPERMERCADOS  BIG06 SIBE"}, {"cod": 34492, "nome": "BIG BOX SUPERMERCADOS BIG11 310N"}, {"cod": 34496, "nome": "BIG BOX SUPERMERCADOS BIG18 211N"}, {"cod": 34494, "nome": "BIG BOX SUPERMERCADOS BIG20 TAGC1"}, {"cod": 34495, "nome": "BIG BOX SUPERMERCADOS BIG21 CNB12"}, {"cod": 34497, "nome": "BIG BOX SUPERMERCADOS BIG24 314N"}, {"cod": 10507, "nome": "BRETAS - B516 - APARECIDA 1"}, {"cod": 10508, "nome": "BRETAS - B524 - RIO VERDE"}, {"cod": 10510, "nome": "BRETAS - B525 - VILA JARAGUA"}, {"cod": 10509, "nome": "BRETAS - B527 - CENTRAL"}, {"cod": 10514, "nome": "BRETAS - B541 - PQ ANHANGUERA"}, {"cod": 10515, "nome": "BRETAS - B545 - CENTRAL"}, {"cod": 10516, "nome": "BRETAS - B551 - PQ ANHANGUERA"}, {"cod": 10599, "nome": "BRETAS - B554 - CATALAO"}, {"cod": 10541, "nome": "BRETAS - B575 - AGUAS LINDAS"}, {"cod": 10531, "nome": "BRETAS - B615 - CENTRAL"}, {"cod": 10532, "nome": "BRETAS - B619 - NOVO MUNDO"}, {"cod": 10533, "nome": "BRETAS - B631 - APARECIDA 1"}, {"cod": 10600, "nome": "BRETAS - B632 - CALDAS NOVAS"}, {"cod": 10534, "nome": "BRETAS - B633 - BALNEARIO"}, {"cod": 10535, "nome": "BRETAS - B634 - JATAI"}, {"cod": 10601, "nome": "BRETAS - B635 - MORRINHOS"}, {"cod": 10536, "nome": "BRETAS - B640 - CAMPOS BELOS"}, {"cod": 10537, "nome": "BRETAS - B644 - APARECIDA 1"}, {"cod": 10737, "nome": "BRETAS - B648 - APARECIDA 3"}, {"cod": 10539, "nome": "BRETAS - B651 - NOVO MUNDO"}, {"cod": 10540, "nome": "BRETAS - B655 - MINEIROS"}, {"cod": 10775, "nome": "BRETAS - B656 - CENTRO"}, {"cod": 10782, "nome": "BRETAS - B658 - PQ ANHANGUERA"}, {"cod": 10542, "nome": "BRETAS - B662 - SENADOR CANEDO"}, {"cod": 10513, "nome": "BRETAS- B538 - APARECIDA 2"}, {"cod": 21087, "nome": "CAMPINAS ATACADO"}, {"cod": 34462, "nome": "CANDANGO BAIRRO"}, {"cod": 12435, "nome": "CANDANGO BAIRRO SETOR 11"}, {"cod": 885, "nome": "CANDANGO I"}, {"cod": 4300, "nome": "CANDANGO II"}, {"cod": 17686, "nome": "CANDANGO PÉROLA"}, {"cod": 7272, "nome": "CIGA  ALIMENTACAO"}, {"cod": 31695, "nome": "CIGA COZINHA INDUSTRIAL E GESTAO ALIMENT"}, {"cod": 4070, "nome": "COMERCIAL IPE"}, {"cod": 18112, "nome": "COMERCIAL LIDERANCA"}, {"cod": 30651, "nome": "COMERCIAL REIS"}, {"cod": 30656, "nome": "COMERCIAL REIS"}, {"cod": 18335, "nome": "COMERCIAL REIS LOJA 14"}, {"cod": 2725, "nome": "CONQUISTA SUPERMERCADO - 4"}, {"cod": 2722, "nome": "CONQUISTA SUPERMERCADO - MATRIZ"}, {"cod": 2723, "nome": "CONQUISTA SUPERMERCADO 2"}, {"cod": 21711, "nome": "DIA A DIA 01"}, {"cod": 26897, "nome": "DIA A DIA 04"}, {"cod": 26898, "nome": "DIA A DIA 07"}, {"cod": 26899, "nome": "DIA A DIA 08"}, {"cod": 19688, "nome": "DIA A DIA 12"}, {"cod": 26910, "nome": "DIA A DIA 21"}, {"cod": 19124, "nome": "DIA A DIA 26"}, {"cod": 21563, "nome": "DIA A DIA 28"}, {"cod": 26903, "nome": "DIA A DIA 29"}, {"cod": 22358, "nome": "DIA A DIA 32"}, {"cod": 26901, "nome": "DIA A DIA 33"}, {"cod": 26904, "nome": "DIA A DIA 34"}, {"cod": 26905, "nome": "DIA A DIA 37"}, {"cod": 26906, "nome": "DIA A DIA 38"}, {"cod": 26337, "nome": "DIA A DIA 42"}, {"cod": 23729, "nome": "DIA A DIA 47"}, {"cod": 29945, "nome": "DIA A DIA 50"}, {"cod": 31815, "nome": "DIA A DIA 52"}, {"cod": 31109, "nome": "DIA A DIA 55"}, {"cod": 30727, "nome": "DIA A DIA 58"}, {"cod": 31110, "nome": "DIA A DIA 60"}, {"cod": 31113, "nome": "DIA A DIA 64"}, {"cod": 35001, "nome": "DIA A DIA 68"}, {"cod": 22750, "nome": "DIA A DIA ATACADOS 39"}, {"cod": 33070, "nome": "DIA DIA 65"}, {"cod": 15051, "nome": "DINAMITE ATAKAREJO LOJA 01"}, {"cod": 29698, "nome": "DINAMITE GAMELEIRA 08"}, {"cod": 30836, "nome": "DINAMITE QUIRINOPOLIS 09"}, {"cod": 13920, "nome": "DINAMITE SUPERMERCADO ATAIDES 3"}, {"cod": 23076, "nome": "DINAMITE SUPERMERCADO CORONEL VAIANO 6"}, {"cod": 25746, "nome": "DINAMITE SUPERMERCADO MARTINS 07"}, {"cod": 4236, "nome": "DINAMITE SUPERMERCADO VILA MARIA 02"}, {"cod": 15986, "nome": "DINAMITE SUPERMERCADOS LARANJEIRA 04"}, {"cod": 21264, "nome": "DVA ATACADOS 30"}, {"cod": 6815, "nome": "FLORESTA SUP"}, {"cod": 6504, "nome": "FLORESTA SUP I"}, {"cod": 8770, "nome": "FLORESTA SUP III"}, {"cod": 32062, "nome": "FOCO DISTRIBUICAO"}, {"cod": 32675, "nome": "GOIABAO - GOYA"}, {"cod": 23824, "nome": "GOIABAO SUPERMERCADO"}, {"cod": 20032, "nome": "GOIABAO SUPERMERCADO MAYSA"}, {"cod": 5274, "nome": "HIPER BATISTA"}, {"cod": 13320, "nome": "IPANEMA ATACADISTA"}, {"cod": 3735, "nome": "MASTER ATACADO"}, {"cod": 31131, "nome": "MAX ATACADISTA"}, {"cod": 32160, "nome": "MAX ATACADISTA"}, {"cod": 32514, "nome": "MAX ATACADISTA"}, {"cod": 33968, "nome": "MAX ATACADISTA"}, {"cod": 34041, "nome": "MAX ATACADISTA"}, {"cod": 25533, "nome": "MAX ATACADO - APARECIDA"}, {"cod": 25532, "nome": "MAX SUPERMERCADOS - RSD RIO VERDE"}, {"cod": 32142, "nome": "MERCADAO DA ECONOMIA  JARAGUA"}, {"cod": 28483, "nome": "MERCADAO DA ECONOMIA  LJ-CRISTALINA"}, {"cod": 22837, "nome": "MERCADAO DA ECONOMIA - CALDAS NOVAS"}, {"cod": 16867, "nome": "MERCADAO DA ECONOMIA - CATALAO"}, {"cod": 20887, "nome": "MERCADAO DA ECONOMIA - GOIATUBA"}, {"cod": 20886, "nome": "MERCADAO DA ECONOMIA - IPORA"}, {"cod": 24143, "nome": "MERCADAO DA ECONOMIA - ITUMBIARA"}, {"cod": 22835, "nome": "MERCADAO DA ECONOMIA - JATAI LJ 01"}, {"cod": 22838, "nome": "MERCADAO DA ECONOMIA - JATAI LJ 02"}, {"cod": 24144, "nome": "MERCADAO DA ECONOMIA - JATAI VL FATIMA"}, {"cod": 16337, "nome": "MERCADAO DA ECONOMIA - MINEIROS LJ 1"}, {"cod": 15435, "nome": "MERCADAO DA ECONOMIA - MINEIROS LJ 2"}, {"cod": 22836, "nome": "MERCADAO DA ECONOMIA - MORRINHOS"}, {"cod": 33652, "nome": "MERCADAO DA ECONOMIA - RIO VERDE"}, {"cod": 28218, "nome": "MERCADAO DA ECONOMIA ITABERAI"}, {"cod": 30188, "nome": "MERCADAO DA ECONOMIA LOJA 04 JATAI GO"}, {"cod": 28219, "nome": "MERCADAO DA ECONOMIA PIRACANJUBA"}, {"cod": 29052, "nome": "MERCADAO DA ECONOMIA QUIRINOPOLIS"}, {"cod": 22839, "nome": "MERCADO ECONOMIA - CATALAO LJ 2"}, {"cod": 17080, "nome": "MULTICANAL ATACADO"}, {"cod": 33165, "nome": "MX COMERCIO ATACADISTA LTDA"}, {"cod": 5110, "nome": "PEROLA SUP"}, {"cod": 6525, "nome": "PEROLA SUP II"}, {"cod": 18793, "nome": "PRO BRAZILIAN PQ AMAZONAS"}, {"cod": 27971, "nome": "RD ATACADISTA"}, {"cod": 22142, "nome": "RD COM. ATACADISTA DE ALIMENTOS"}, {"cod": 731, "nome": "REDE JAIME"}, {"cod": 23434, "nome": "REDE LUCAS DE SUPERMERCADOS"}, {"cod": 29014, "nome": "REDE LUCAS DE SUPERMERCADOS"}, {"cod": 29017, "nome": "REDE LUCAS DE SUPERMERCADOS"}, {"cod": 29018, "nome": "REDE LUCAS DE SUPERMERCADOS"}, {"cod": 29019, "nome": "REDE LUCAS DE SUPERMERCADOS"}, {"cod": 29015, "nome": "REDE LUCAS DE SUPERMERCADOS 04"}, {"cod": 29016, "nome": "REDE LUCAS DE SUPERMERCADOS 05"}, {"cod": 32233, "nome": "REDE MAE SUPERMERCADO"}, {"cod": 33734, "nome": "REDE MAE SUPERMERCADO"}, {"cod": 25711, "nome": "REDE MEGA DE SUP - TRINDADE"}, {"cod": 25620, "nome": "REDE MEGA DE SUPERM. BALNEARIO"}, {"cod": 25619, "nome": "REDE MEGA DE SUPERM. FINSOCIAL"}, {"cod": 25621, "nome": "REDE MEGA DE SUPERMERCADOS"}, {"cod": 25714, "nome": "REDE MEGA DE SUPERMERCADOS"}, {"cod": 25715, "nome": "REDE MEGA DE SUPERMERCADOS"}, {"cod": 25551, "nome": "REDE MEGA SUPERMERCADOS"}, {"cod": 31591, "nome": "REDE PACOCA DE SUPERMERCADOS"}, {"cod": 24634, "nome": "RIO VERMELHO ATACADO E VAREJO"}, {"cod": 25574, "nome": "RIO VERMELHO ATACADO E VAREJO"}, {"cod": 29686, "nome": "RIO VERMELHO ATACADO E VAREJO"}, {"cod": 29013, "nome": "ROJAO ATACADISTA"}, {"cod": 6518, "nome": "SIM ATACADO - COLORADO"}, {"cod": 24505, "nome": "SIM ATACADO - GARAVELO"}, {"cod": 9500, "nome": "SIM ATACADO - GOIA"}, {"cod": 9416, "nome": "STORE APARECIDA"}, {"cod": 27096, "nome": "STORE APARECIDA 2"}, {"cod": 15510, "nome": "STORE BELA VISTA"}, {"cod": 760, "nome": "STORE CAMPINAS"}, {"cod": 8446, "nome": "STORE FAMA"}, {"cod": 33631, "nome": "STORE LORENA PARK"}, {"cod": 4885, "nome": "STORE NORTE"}, {"cod": 4874, "nome": "STORE PLAZA"}, {"cod": 22764, "nome": "STORE RIO VERDE"}, {"cod": 16343, "nome": "STORE SHOPPING AMERICA"}, {"cod": 8034, "nome": "STORE ST DOS AFONSOS"}, {"cod": 34879, "nome": "STORE TRANSPORTES"}, {"cod": 763, "nome": "STORE TRINDADE"}, {"cod": 21390, "nome": "STORE TRINDADE 2"}, {"cod": 1164, "nome": "SUP PRO BRASILIAN AEROPORTO - LJ 01"}, {"cod": 1424, "nome": "SUP PRO BRASILIAN BALNEARIO - LJ 04"}, {"cod": 1142, "nome": "SUP PRO BRASILIAN VL NOVA - LJ 02"}, {"cod": 676, "nome": "SUP PRO BRAZILIAN - T 9 - LJ 03"}, {"cod": 9342, "nome": "SUP REIS LOJA 05"}, {"cod": 9343, "nome": "SUP REIS LOJA 09"}, {"cod": 24963, "nome": "SUP REIS LOJA 15"}, {"cod": 24964, "nome": "SUP REIS LOJA 16"}, {"cod": 9396, "nome": "SUP REIS LOJA 2"}, {"cod": 9277, "nome": "SUP REIS MORRINHOS LOJA 6"}, {"cod": 9278, "nome": "SUP REIS RIO VERDE LOJA 04"}, {"cod": 7959, "nome": "SUPER BIG BOX SUP"}, {"cod": 28349, "nome": "SUPER MAX"}, {"cod": 4900, "nome": "SUPER STORE URIAS"}, {"cod": 11525, "nome": "SUPER VIVENDAS LJ 4"}, {"cod": 32932, "nome": "SUPERMAX"}, {"cod": 34493, "nome": "SUPERMERCADO BIG BOX BIG12 208N"}, {"cod": 12971, "nome": "SUPERMERCADO BRASIL"}, {"cod": 23605, "nome": "SUPERMERCADO BRASIL"}, {"cod": 29752, "nome": "SUPERMERCADO BRASIL"}, {"cod": 33146, "nome": "SUPERMERCADO BRASIL"}, {"cod": 22225, "nome": "SUPERMERCADO BRASIL LJ 01"}, {"cod": 22224, "nome": "SUPERMERCADO BRASIL LJ 03"}, {"cod": 22226, "nome": "SUPERMERCADO BRASIL LJ 05"}, {"cod": 30694, "nome": "SUPERMERCADO BRETAS"}, {"cod": 3282, "nome": "SUPERMERCADO DO POVO"}, {"cod": 24511, "nome": "SUPERMERCADO DO POVO"}, {"cod": 34126, "nome": "SUPERMERCADO DO POVO ATACAREJO"}, {"cod": 23852, "nome": "SUPERMERCADO PRATIKO LJ 08"}, {"cod": 25807, "nome": "SUPERMERCADO PRO BRAZILIAN"}, {"cod": 20375, "nome": "SUPERMERCADO PRO-BRAZILIAN - JD ATLANTIC"}, {"cod": 30652, "nome": "SUPERMERCADO REIS"}, {"cod": 30657, "nome": "SUPERMERCADO REIS"}, {"cod": 30659, "nome": "SUPERMERCADO REIS"}, {"cod": 30660, "nome": "SUPERMERCADO REIS"}, {"cod": 33597, "nome": "SUPERMERCADO REIS"}, {"cod": 33598, "nome": "SUPERMERCADO REIS"}, {"cod": 33599, "nome": "SUPERMERCADO REIS"}, {"cod": 33600, "nome": "SUPERMERCADO REIS"}, {"cod": 33601, "nome": "SUPERMERCADO REIS"}, {"cod": 33602, "nome": "SUPERMERCADO REIS"}, {"cod": 33940, "nome": "SUPERMERCADO REIS"}, {"cod": 10838, "nome": "SUPERMERCADO REIS LOJA 03"}, {"cod": 9362, "nome": "SUPERMERCADO REIS LOJA 08"}, {"cod": 15032, "nome": "SUPERMERCADO REIS LOJA 11"}, {"cod": 16643, "nome": "SUPERMERCADO REIS LOJA 12"}, {"cod": 17092, "nome": "SUPERMERCADO REIS LOJA 13"}, {"cod": 9363, "nome": "SUPERMERCADO REIS LOJA 7"}, {"cod": 9164, "nome": "SUPERMERCADO REIS MATRIZ"}, {"cod": 30655, "nome": "SUPERMERCADOS REIS"}, {"cod": 12676, "nome": "SUPERMERCADOS REIS 10 LOJA 10"}, {"cod": 29691, "nome": "SUPERVI"}, {"cod": 32287, "nome": "SUPERVI"}, {"cod": 21769, "nome": "SUPERVI - CIDADE JARDIM"}, {"cod": 6537, "nome": "SUPERVI 02"}, {"cod": 6538, "nome": "SUPERVI 03"}, {"cod": 6496, "nome": "SUPERVI 04"}, {"cod": 6539, "nome": "SUPERVI 05"}, {"cod": 6540, "nome": "SUPERVI 06"}, {"cod": 6519, "nome": "SUPERVI 07"}, {"cod": 6541, "nome": "SUPERVI 08"}, {"cod": 6542, "nome": "SUPERVI 09"}, {"cod": 6543, "nome": "SUPERVI 11"}, {"cod": 6544, "nome": "SUPERVI 12"}, {"cod": 6547, "nome": "SUPERVI 13"}, {"cod": 6595, "nome": "SUPERVI 14"}, {"cod": 17381, "nome": "SUPERVI GOIANIA LOJA 01"}, {"cod": 33183, "nome": "SUPERVI PREMIUM"}, {"cod": 31227, "nome": "SUPERVI SUPERMERCADOS LOJA 017"}, {"cod": 17521, "nome": "TATICO AGUAS LINDAS 1"}, {"cod": 22420, "nome": "TATICO AGUAS LINDAS 2"}, {"cod": 33256, "nome": "TATICO CEILANDIA SUL"}, {"cod": 33258, "nome": "TATICO EPTG"}, {"cod": 25278, "nome": "TATICO LUZIANIA"}, {"cod": 33255, "nome": "TATICO RECANTO"}, {"cod": 33252, "nome": "TATICO SAMAMBAIA NORTE"}, {"cod": 33253, "nome": "TATICO SAMAMBAIA SUL"}, {"cod": 33254, "nome": "TATICO SANTA MARIA"}, {"cod": 34581, "nome": "TATICO SOBRADINHO"}, {"cod": 33257, "nome": "TATICO VICENTE PIRES"}, {"cod": 35103, "nome": "ULTRABOX"}, {"cod": 34274, "nome": "ULTRABOX  - AGUAS LINDAS"}, {"cod": 35098, "nome": "ULTRABOX -  ULT11-ITAPOA"}, {"cod": 34273, "nome": "ULTRABOX - PLANALTINA GO"}, {"cod": 35092, "nome": "ULTRABOX - ULT01-PLANDF"}, {"cod": 35106, "nome": "ULTRABOX - ULT02-GAMA"}, {"cod": 35093, "nome": "ULTRABOX - ULT03-COL"}, {"cod": 35094, "nome": "ULTRABOX - ULT04-CEIS"}, {"cod": 35095, "nome": "ULTRABOX - ULT05-PLJK"}, {"cod": 35096, "nome": "ULTRABOX - ULT06-SOB"}, {"cod": 35112, "nome": "ULTRABOX - ULT07-ADE"}, {"cod": 19576, "nome": "ULTRABOX - ULT08 - ARAP"}, {"cod": 35110, "nome": "ULTRABOX - ULT10-ESTR"}, {"cod": 35099, "nome": "ULTRABOX - ULT12-SAOSEB"}, {"cod": 35108, "nome": "ULTRABOX - ULT15-SOLNA"}, {"cod": 35104, "nome": "ULTRABOX - ULT17-SAMAMB"}, {"cod": 35101, "nome": "ULTRABOX - ULT18-BRAZL"}, {"cod": 35107, "nome": "ULTRABOX - ULT19-VIAPARK"}, {"cod": 35109, "nome": "ULTRABOX - ULT20-TAGS"}, {"cod": 35111, "nome": "ULTRABOX - ULT22-VIPIRES"}, {"cod": 35102, "nome": "ULTRABOX - ULT23-SMARIA"}, {"cod": 35105, "nome": "ULTRABOX - ULT24-PBRASI"}, {"cod": 35067, "nome": "ULTRABOX -CIDADE OCIDENTAL"}, {"cod": 35100, "nome": "ULTRABOX ATACADO E VAREJO"}, {"cod": 32282, "nome": "VILEFORT"}, {"cod": 19422, "nome": "VILLEFORT"}, {"cod": 33207, "nome": "VILLEFORT ANAPOLIS LJ 02"}, {"cod": 28325, "nome": "VILLEFORT GYN 1"}, {"cod": 32281, "nome": "VILLEFORT LOJA 02 GOIANIA"}, {"cod": 30449, "nome": "VISAO ALIMENTOS"}, {"cod": 34791, "nome": "VISAO ALIMENTOS"}, {"cod": 34432, "nome": "VIVENDAS AGUAS"}, {"cod": 34408, "nome": "VIVENDAS ARBS"}, {"cod": 34434, "nome": "VIVENDAS CAMPING"}, {"cod": 34430, "nome": "VIVENDAS JARDIM"}, {"cod": 34424, "nome": "VIVENDAS LUZ"}, {"cod": 34441, "nome": "VIVENDAS NSF 280"}, {"cod": 34425, "nome": "VIVENDAS NSF 304"}, {"cod": 34407, "nome": "VIVENDAS NSF MATRIZ"}, {"cod": 34439, "nome": "VIVENDAS NSF02"}, {"cod": 34411, "nome": "VIVENDAS NSM 105"}, {"cod": 34397, "nome": "VIVENDAS NSM 209"}, {"cod": 34398, "nome": "VIVENDAS NSM MATR"}, {"cod": 34393, "nome": "VIVENDAS NSM ST MARIA"}, {"cod": 34436, "nome": "VIVENDAS NSP MATRIZ"}, {"cod": 34396, "nome": "VIVENDAS NSP QD10"}, {"cod": 34402, "nome": "VIVENDAS NSP QD7"}, {"cod": 34438, "nome": "VIVENDAS NSP02"}, {"cod": 34409, "nome": "VIVENDAS RAWL"}, {"cod": 34412, "nome": "VIVENDAS SARW"}, {"cod": 34440, "nome": "VIVENDAS SR02"}, {"cod": 34423, "nome": "VIVENDAS STMJ 02"}, {"cod": 34427, "nome": "VIVENDAS STMJ 03"}, {"cod": 34433, "nome": "VIVENDAS STMJ 04"}, {"cod": 34435, "nome": "VIVENDAS STMJ MATR"}, {"cod": 34413, "nome": "VIVENDAS VS"}, {"cod": 34399, "nome": "VIVENDAS WBBL"}, {"cod": 11526, "nome": "VIVENDAS WBL"}, {"cod": 34426, "nome": "VIVENDASL LUNA ATAC"}], "gerado": "2026-10-26 22:57:11", "data": "26/10/2026"};
 
-const KEY_STATUS = "perfil_shelflife_status";
+
+/* ========== Supabase ========== */
+const SB_URL = "https://iblmxmtqwmjlljanrcey.supabase.co";
+/* Chave anon (leitura). Escrita: policies abertas OU service abaixo só p/ uso interno. */
+const SB_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlibG14bXRxd21qbGxqYW5yY2V5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyMjg1MjQsImV4cCI6MjEwODgwNDUyNH0.ovbiaTPK-Y4WJ2lgT2bqe1YBzFxG7I4qkojhqBWtJ5E";
+/* service_role — NÃO publicar esta página na internet. Uso interno Logfrico. */
+const SB_SERVICE = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlibG14bXRxd21qbGxqYW5yY2V5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MzIyODUyNCwiZXhwIjoyMTA4ODA0NTI0fQ.r3lUgMwwA9c-wZIoEIFt2Pt4WVke9y84VJ_yDBI7b9k";
+const SB_KEY = SB_SERVICE; // escrita + leitura no app interno
+
+const KEY_STATUS = "perfil_shelflife_status"; // fallback offline
 const KEY_EXTRA = "perfil_shelflife_extra";
 const KEY_ORDENS = "perfil_shelflife_ordens";
 const KEY_META = "perfil_shelflife_meta";
@@ -634,8 +678,47 @@ let toastTimer = null;
 let runtime = {
   ordens: [],
   shelf_all: [],
-  meta: { source: "seed", loadedAt: null, fileName: null }
+  meta: { source: "seed", loadedAt: null, fileName: null },
+  sbOnline: false
 };
+
+function todayISO() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return y + "-" + m + "-" + day;
+}
+
+function getSelectedDate() {
+  const el = document.getElementById("filtroData");
+  return (el && el.value) ? el.value : todayISO();
+}
+
+function setSelectedDate(iso) {
+  const el = document.getElementById("filtroData");
+  if (el) el.value = iso;
+}
+
+function sbHeaders(extra) {
+  const h = {
+    apikey: SB_KEY,
+    Authorization: "Bearer " + SB_KEY,
+    "Content-Type": "application/json"
+  };
+  if (extra) Object.assign(h, extra);
+  return h;
+}
+
+async function sbFetch(path, options) {
+  const opts = options || {};
+  const res = await fetch(SB_URL + "/rest/v1/" + path, {
+    method: opts.method || "GET",
+    headers: sbHeaders(opts.headers || {}),
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  });
+  return res;
+}
 
 function loadStatus() {
   try { return JSON.parse(localStorage.getItem(KEY_STATUS) || "{}"); }
@@ -649,20 +732,45 @@ function loadExtra() {
 function saveExtra(arr) { localStorage.setItem(KEY_EXTRA, JSON.stringify(arr)); }
 
 function getStatus(cod) {
+  // Prefer runtime shelf status if present
+  const found = runtime.shelf_all.find(function (c) { return c.cod === Number(cod); });
+  if (found && found.status) return found.status === "inapto" ? "inapto" : "apto";
   return loadStatus()[String(cod)] === "inapto" ? "inapto" : "apto";
 }
-function setStatus(cod, status) {
+
+function setStatusLocal(cod, status) {
   const s = loadStatus();
   if (status === "apto") delete s[String(cod)];
   else s[String(cod)] = "inapto";
   saveStatus(s);
+  const found = runtime.shelf_all.find(function (c) { return c.cod === Number(cod); });
+  if (found) found.status = status;
 }
+
+async function setStatus(cod, status) {
+  setStatusLocal(cod, status);
+  try {
+    const res = await sbFetch("clientes?codparc=eq." + encodeURIComponent(cod), {
+      method: "PATCH",
+      headers: { Prefer: "return=minimal" },
+      body: { status: status }
+    });
+    if (!res.ok) console.warn("Supabase status", res.status, await res.text());
+  } catch (e) {
+    console.warn("Supabase status offline", e);
+  }
+}
+
 function isApto(cod) { return getStatus(cod) === "apto"; }
 
 function getCadastro() {
   const map = {};
-  runtime.shelf_all.forEach(function (c) { map[c.cod] = { cod: c.cod, nome: c.nome }; });
-  loadExtra().forEach(function (c) { map[c.cod] = { cod: c.cod, nome: c.nome }; });
+  runtime.shelf_all.forEach(function (c) {
+    map[c.cod] = { cod: c.cod, nome: c.nome, status: c.status || getStatus(c.cod) };
+  });
+  loadExtra().forEach(function (c) {
+    map[c.cod] = { cod: c.cod, nome: c.nome, status: getStatus(c.cod) };
+  });
   return Object.values(map).sort(function (a, b) {
     return a.nome.localeCompare(b.nome, "pt-BR");
   });
@@ -687,45 +795,260 @@ function toast(msg, ok) {
   toastTimer = setTimeout(function () { el.classList.remove("is-show"); }, 2800);
 }
 
-function initRuntime() {
-  runtime.shelf_all = DATA_SEED.shelf_all.slice();
-  let stored = null;
-  try { stored = JSON.parse(localStorage.getItem(KEY_ORDENS) || "null"); } catch (e) { stored = null; }
+function groupPedidosToOrdens(rows) {
+  const byOrdem = {};
+  rows.forEach(function (r) {
+    const ordem = String(r.ordem_carga);
+    if (!byOrdem[ordem]) byOrdem[ordem] = {};
+    byOrdem[ordem][r.codparc] = r.nome_parceiro;
+  });
+  return Object.keys(byOrdem)
+    .sort(function (a, b) {
+      const na = parseInt(a, 10), nb = parseInt(b, 10);
+      if (!isNaN(na) && !isNaN(nb)) return na - nb;
+      return String(a).localeCompare(String(b));
+    })
+    .map(function (ordem) {
+      const clientes = Object.keys(byOrdem[ordem])
+        .map(function (k) { return { cod: Number(k), nome: byOrdem[ordem][k] }; })
+        .sort(function (a, b) { return a.nome.localeCompare(b.nome, "pt-BR"); });
+      return { ordem: ordem, clientes: clientes, num: clientes.length };
+    });
+}
+
+async function loadFromSupabase() {
+  try {
+    const date = getSelectedDate();
+    const start = date + "T00:00:00";
+    const end = date + "T23:59:59.999";
+
+    const [rc, rp] = await Promise.all([
+      sbFetch("clientes?select=codparc,nomeparc,status&order=nomeparc"),
+      sbFetch(
+        "pedidos?select=ordem_carga,codparc,nome_parceiro,created_at" +
+        "&created_at=gte." + encodeURIComponent(start) +
+        "&created_at=lte." + encodeURIComponent(end) +
+        "&order=ordem_carga"
+      )
+    ]);
+    if (!rc.ok || !rp.ok) throw new Error("HTTP " + rc.status + "/" + rp.status);
+    const clientes = await rc.json();
+    const pedidos = await rp.json();
+    if (!Array.isArray(clientes) || !clientes.length) throw new Error("clientes vazio");
+
+    runtime.shelf_all = clientes.map(function (c) {
+      return { cod: c.codparc, nome: c.nomeparc, status: c.status || "apto" };
+    });
+    const st = {};
+    runtime.shelf_all.forEach(function (c) {
+      if (c.status === "inapto") st[String(c.cod)] = "inapto";
+    });
+    saveStatus(st);
+
+    if (Array.isArray(pedidos) && pedidos.length) {
+      runtime.ordens = groupPedidosToOrdens(pedidos);
+      runtime.meta = {
+        source: "supabase",
+        loadedAt: new Date().toLocaleString("pt-BR"),
+        fileName: "Supabase · " + date,
+        dataRef: date
+      };
+    } else {
+      runtime.ordens = [];
+      runtime.meta = {
+        source: "supabase",
+        loadedAt: new Date().toLocaleString("pt-BR"),
+        fileName: "Supabase · " + date + " (sem pedidos)",
+        dataRef: date
+      };
+    }
+    runtime.sbOnline = true;
+    touchLastUpdate(new Date());
+    return true;
+  } catch (e) {
+    console.warn("Falha Supabase, usando dados locais", e);
+    runtime.sbOnline = false;
+    return false;
+  }
+}
+
+function loadLocalFallback() {
+  const date = getSelectedDate();
+  runtime.shelf_all = DATA_SEED.shelf_all.map(function (c) {
+    return { cod: c.cod, nome: c.nome, status: getStatus(c.cod) };
+  });
+  let byDate = null;
+  try { byDate = JSON.parse(localStorage.getItem(KEY_ORDENS) || "null"); } catch (e) { byDate = null; }
+  // New format: { "2026-10-28": [ordens...], ... } or legacy array
+  let ordens = null;
   let meta = null;
   try { meta = JSON.parse(localStorage.getItem(KEY_META) || "null"); } catch (e) { meta = null; }
 
-  if (stored && Array.isArray(stored) && stored.length) {
-    runtime.ordens = stored;
-    runtime.meta = meta || { source: "localStorage", loadedAt: null, fileName: null };
-  } else {
+  if (byDate && !Array.isArray(byDate) && typeof byDate === "object") {
+    ordens = byDate[date] || [];
+  } else if (Array.isArray(byDate) && byDate.length) {
+    // legacy: only show if today
+    if (date === todayISO()) ordens = byDate;
+    else ordens = [];
+  }
+
+  if (ordens && ordens.length) {
+    runtime.ordens = ordens;
+    runtime.meta = meta || { source: "localStorage", loadedAt: null, fileName: "Local · " + date, dataRef: date };
+    runtime.meta.dataRef = date;
+  } else if (date === todayISO() && DATA_SEED.ordens && DATA_SEED.ordens.length) {
     runtime.ordens = JSON.parse(JSON.stringify(DATA_SEED.ordens));
     runtime.meta = {
       source: "seed",
       loadedAt: DATA_SEED.gerado || null,
-      fileName: "Pedidos inicial (embutido)"
+      fileName: "Seed local · " + date,
+      dataRef: date
+    };
+  } else {
+    runtime.ordens = [];
+    runtime.meta = {
+      source: "empty",
+      loadedAt: null,
+      fileName: "Sem pedidos em " + date,
+      dataRef: date
     };
   }
+}
+
+async function initRuntime() {
+  const ok = await loadFromSupabase();
+  if (!ok) loadLocalFallback();
   updateUploadInfo();
 }
 
-function persistOrdens() {
-  localStorage.setItem(KEY_ORDENS, JSON.stringify(runtime.ordens));
+function persistOrdensLocal() {
+  const date = getSelectedDate();
+  let byDate = {};
+  try {
+    const raw = JSON.parse(localStorage.getItem(KEY_ORDENS) || "{}");
+    if (raw && !Array.isArray(raw) && typeof raw === "object") byDate = raw;
+  } catch (e) { byDate = {}; }
+  byDate[date] = runtime.ordens;
+  localStorage.setItem(KEY_ORDENS, JSON.stringify(byDate));
+  runtime.meta = runtime.meta || {};
+  runtime.meta.dataRef = date;
   localStorage.setItem(KEY_META, JSON.stringify(runtime.meta));
+}
+
+async function reloadForDate() {
+  const ok = await loadFromSupabase();
+  if (!ok) loadLocalFallback();
+  updateUploadInfo();
+  renderOrdens();
+  updateStats();
+}
+
+async function replacePedidosOnSupabase(ordens) {
+  // delete only pedidos of the selected date, then insert
+  const dataRef = getSelectedDate();
+  const start = dataRef + "T00:00:00";
+  const end = dataRef + "T23:59:59.999";
+  const del = await sbFetch(
+    "pedidos?created_at=gte." + encodeURIComponent(start) +
+    "&created_at=lte." + encodeURIComponent(end),
+    {
+      method: "DELETE",
+      headers: { Prefer: "return=minimal" }
+    }
+  );
+  if (!del.ok) {
+    console.warn("delete pedidos", del.status, await del.text());
+  }
+  const createdAt = dataRef + "T12:00:00-03:00";
+  const rows = [];
+  ordens.forEach(function (o) {
+    o.clientes.forEach(function (c) {
+      rows.push({
+        ordem_carga: String(o.ordem),
+        codparc: Number(c.cod),
+        nome_parceiro: String(c.nome),
+        created_at: createdAt
+      });
+    });
+  });
+  // ensure clients exist for FK
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const exists = runtime.shelf_all.some(function (c) { return c.cod === row.codparc; });
+    if (!exists) {
+      await sbFetch("clientes", {
+        method: "POST",
+        headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+        body: { codparc: row.codparc, nomeparc: row.nome_parceiro, status: "apto" }
+      });
+      runtime.shelf_all.push({ cod: row.codparc, nome: row.nome_parceiro, status: "apto" });
+    }
+  }
+  for (let i = 0; i < rows.length; i += 100) {
+    const batch = rows.slice(i, i + 100);
+    const res = await sbFetch("pedidos?on_conflict=ordem_carga,codparc", {
+      method: "POST",
+      headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+      body: batch
+    });
+    if (!res.ok) throw new Error("insert pedidos " + res.status + " " + (await res.text()));
+  }
+}
+
+function formatDateTime(d) {
+  if (!d) d = new Date();
+  if (typeof d === "string") d = new Date(d);
+  if (!(d instanceof Date) || isNaN(d.getTime())) d = new Date();
+  return d.toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+}
+
+function touchLastUpdate(when) {
+  const iso = (when instanceof Date ? when : (when ? new Date(when) : new Date())).toISOString();
+  try { localStorage.setItem("perfil_shelflife_last_update", iso); } catch (e) {}
+  runtime.meta = runtime.meta || {};
+  runtime.meta.loadedAt = formatDateTime(iso);
+  updateLastUpdateDisplay();
+}
+
+function updateLastUpdateDisplay() {
+  let iso = null;
+  try { iso = localStorage.getItem("perfil_shelflife_last_update"); } catch (e) {}
+  let text;
+  if (iso) {
+    text = formatDateTime(iso);
+  } else if (runtime.meta && runtime.meta.loadedAt) {
+    text = runtime.meta.loadedAt;
+  } else {
+    text = formatDateTime(new Date());
+  }
+  const pill = document.getElementById("dataHoje");
+  if (pill) pill.textContent = "📅 Atualizado: " + text;
+  const foot = document.getElementById("footerUpdate");
+  if (foot) foot.textContent = "última atualização: " + text;
 }
 
 function updateUploadInfo() {
   const el = document.getElementById("uploadInfo");
   if (!el) return;
   const m = runtime.meta || {};
-  if (m.source === "seed") {
+  const sb = runtime.sbOnline ? " · Supabase OK" : " · offline";
+  if (m.source === "seed" || m.source === "empty") {
     el.className = "warn";
-    el.textContent = "dados iniciais do sistema" + (m.loadedAt ? " · " + m.loadedAt : "");
+    el.textContent = (m.fileName || "dados iniciais") + (m.loadedAt ? " · " + m.loadedAt : "") + sb;
   } else {
     el.className = "ok";
-    el.textContent = (m.fileName || "Pedidos.xls") +
-      (m.loadedAt ? " · carregado em " + m.loadedAt : "") +
-      " · " + runtime.ordens.length + " ordem(ns)";
+    el.textContent = (m.fileName || "Pedidos") +
+      (m.loadedAt ? " · " + m.loadedAt : "") +
+      " · " + runtime.ordens.length + " ordem(ns)" + sb;
   }
+  updateLastUpdateDisplay();
 }
 
 function mostrarView(nome) {
@@ -756,7 +1079,7 @@ function renderCadastro() {
   const lista = getCadastro();
   let html = "";
   lista.forEach(function (c) {
-    const st = getStatus(c.cod);
+    const st = c.status || getStatus(c.cod);
     if (filtroStatus !== "todos" && st !== filtroStatus) return;
     if (q && String(c.cod).indexOf(q) === -1 && c.nome.toLowerCase().indexOf(q) === -1) return;
     const rowCls = st === "inapto" ? " is-inapto" : "";
@@ -784,18 +1107,18 @@ function pedirInapto(cod, nome) {
     "</strong> como <strong>Inapto</strong>?<br><br>Ele <u>não será exibido</u> nas Ordens de Carga.";
   openModal("modalConfirm");
 }
-function confirmarInapto() {
+async function confirmarInapto() {
   if (pendingInapto != null) {
-    setStatus(pendingInapto, "inapto");
-    toast("Cliente marcado como Inapto", true);
+    await setStatus(pendingInapto, "inapto");
+    toast("Cliente marcado como Inapto (Supabase)", true);
     pendingInapto = null;
   }
   closeModal("modalConfirm");
   renderCadastro(); renderOrdens(); updateStats();
 }
-function tornarApto(cod) {
-  setStatus(cod, "apto");
-  toast("Cliente restaurado como Apto", true);
+async function tornarApto(cod) {
+  await setStatus(cod, "apto");
+  toast("Cliente restaurado como Apto (Supabase)", true);
   renderCadastro(); renderOrdens(); updateStats();
 }
 function abrirIncluir() {
@@ -804,7 +1127,7 @@ function abrirIncluir() {
   openModal("modalIncluir");
   setTimeout(function () { document.getElementById("incluirCod").focus(); }, 40);
 }
-function incluirCliente() {
+async function incluirCliente() {
   const codStr = document.getElementById("incluirCod").value.trim();
   const nome = document.getElementById("incluirNome").value.trim();
   if (!codStr || !nome) { toast("Preencha código e nome"); return; }
@@ -812,8 +1135,20 @@ function incluirCliente() {
   if (!cod) { toast("Código inválido"); return; }
   const extra = loadExtra();
   const exists = getCadastro().some(function (c) { return c.cod === cod; });
-  if (exists) setStatus(cod, "apto");
-  else { extra.push({ cod: cod, nome: nome }); saveExtra(extra); setStatus(cod, "apto"); }
+  if (!exists) {
+    extra.push({ cod: cod, nome: nome });
+    saveExtra(extra);
+    runtime.shelf_all.push({ cod: cod, nome: nome, status: "apto" });
+  }
+  setStatusLocal(cod, "apto");
+  try {
+    const res = await sbFetch("clientes?on_conflict=codparc", {
+      method: "POST",
+      headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+      body: { codparc: cod, nomeparc: nome, status: "apto" }
+    });
+    if (!res.ok) console.warn("insert cliente", res.status, await res.text());
+  } catch (e) { console.warn(e); }
   closeModal("modalIncluir");
   toast("Cliente incluído como Apto", true);
   renderCadastro(); renderOrdens(); updateStats();
@@ -880,15 +1215,15 @@ function updateStats() {
 function expandirTodos() {
   document.querySelectorAll(".order").forEach(function (c) {
     c.classList.add("is-open");
-    const h = c.querySelector(".order__head");
-    if (h) h.setAttribute("aria-expanded", "true");
+    const hd = c.querySelector(".order__head");
+    if (hd) hd.setAttribute("aria-expanded", "true");
   });
 }
 function recolherTodos() {
   document.querySelectorAll(".order").forEach(function (c) {
     c.classList.remove("is-open");
-    const h = c.querySelector(".order__head");
-    if (h) h.setAttribute("aria-expanded", "false");
+    const hd = c.querySelector(".order__head");
+    if (hd) hd.setAttribute("aria-expanded", "false");
   });
 }
 
@@ -920,7 +1255,6 @@ function downloadBlob(blob, filename) {
   URL.revokeObjectURL(a.href);
 }
 
-/** @param {boolean} silent - se true, não mostra toast (usado no upload) */
 function salvarBackup(silent) {
   const payload = buildBackupPayload();
   const day = new Date().toISOString().slice(0, 10);
@@ -930,7 +1264,8 @@ function salvarBackup(silent) {
   const lines = [];
   lines.push("BACKUP PERFIL CLIENTE SHELFLIFE");
   lines.push("Data: " + new Date().toLocaleString("pt-BR"));
-  lines.push("Origem pedidos: " + ((runtime.meta && runtime.meta.fileName) || "—"));
+  lines.push("Origem: " + ((runtime.meta && runtime.meta.fileName) || "—"));
+  lines.push("Supabase: " + (runtime.sbOnline ? "online" : "offline"));
   lines.push("");
   lines.push("=== CADASTRO ===");
   lines.push("Código;Nome;Status");
@@ -951,8 +1286,8 @@ function salvarBackup(silent) {
   if (!silent) toast("Backup salvo (CSV + JSON)", true);
 }
 
-function normalizeHeader(h) {
-  return String(h || "")
+function normalizeHeader(hdr) {
+  return String(hdr || "")
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -982,7 +1317,6 @@ function parsePedidosWorkbook(workbook) {
   const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "", raw: false });
   if (!rows.length) throw new Error("Planilha vazia");
 
-  // Detect header row (look for "Ordem de carga" / "Parceiro")
   let headerRow = -1;
   for (let i = 0; i < Math.min(rows.length, 15); i++) {
     const joined = rows[i].map(normalizeHeader).join("|");
@@ -992,7 +1326,6 @@ function parsePedidosWorkbook(workbook) {
     }
   }
   if (headerRow === -1) {
-    // fallback: row with most non-empty cells among first 10
     let best = 0, bestCount = 0;
     for (let i = 0; i < Math.min(rows.length, 10); i++) {
       const c = rows[i].filter(function (x) { return String(x).trim() !== ""; }).length;
@@ -1021,7 +1354,6 @@ function parsePedidosWorkbook(workbook) {
     if (ordemRaw === "" || ordemRaw == null || parcRaw === "" || parcRaw == null) continue;
 
     let ordem = String(ordemRaw).trim();
-    // "11467000.0" -> "11467000"
     if (/^\d+(\.0+)?$/.test(ordem)) ordem = String(parseInt(ordem, 10));
 
     const cod = parseInt(String(parcRaw).replace(/[^\d]/g, ""), 10);
@@ -1037,7 +1369,7 @@ function parsePedidosWorkbook(workbook) {
     byOrdem[ordem][cod] = nome;
   }
 
-  const ordens = Object.keys(byOrdem)
+  return Object.keys(byOrdem)
     .sort(function (a, b) {
       const na = parseInt(a, 10), nb = parseInt(b, 10);
       if (!isNaN(na) && !isNaN(nb)) return na - nb;
@@ -1049,8 +1381,6 @@ function parsePedidosWorkbook(workbook) {
         .sort(function (a, b) { return a.nome.localeCompare(b.nome, "pt-BR"); });
       return { ordem: ordem, clientes: clientes, num: clientes.length };
     });
-
-  return ordens;
 }
 
 function onPedidosFile(file) {
@@ -1063,36 +1393,40 @@ function onPedidosFile(file) {
   const btn = document.getElementById("btnUploadPedidos");
   btn.disabled = true;
 
-  // 1) Backup automático do estado ATUAL antes de substituir
-  try {
-    salvarBackup(true);
-  } catch (e) {
-    console.warn(e);
-  }
+  try { salvarBackup(true); } catch (e) { console.warn(e); }
 
   const reader = new FileReader();
-  reader.onload = function (e) {
+  reader.onload = async function (e) {
     try {
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: "array" });
       const ordens = parsePedidosWorkbook(workbook);
 
-      // 2) Substitui TODOS os pedidos antigos
       runtime.ordens = ordens;
+      const dataRef = getSelectedDate();
       runtime.meta = {
         source: "upload",
         loadedAt: new Date().toLocaleString("pt-BR"),
-        fileName: file.name
+        fileName: file.name + " · " + dataRef,
+        dataRef: dataRef
       };
-      persistOrdens();
+      persistOrdensLocal();
+      touchLastUpdate(new Date());
+
+      // Sync Supabase: substitui todos os pedidos
+      try {
+        await replacePedidosOnSupabase(ordens);
+        runtime.sbOnline = true;
+        touchLastUpdate(new Date());
+        toast("Backup salvo · Pedidos no Supabase (" + ordens.length + " ordens)", true);
+      } catch (err) {
+        console.warn(err);
+        toast("Pedidos locais OK · falha ao gravar Supabase: " + (err.message || err));
+      }
+
       updateUploadInfo();
       renderOrdens();
       updateStats();
-
-      toast(
-        "Backup salvo · Pedidos substituídos (" + ordens.length + " ordens com shelflife)",
-        true
-      );
     } catch (err) {
       console.error(err);
       toast("Erro ao ler planilha: " + (err.message || err));
@@ -1121,15 +1455,27 @@ document.querySelectorAll(".modal-backdrop").forEach(function (el) {
 });
 document.addEventListener("keydown", function (e) {
   if (e.key === "Escape") {
-    document.querySelectorAll(".modal-backdrop.is-open").forEach(function (m) {
-      m.classList.remove("is-open");
+    document.querySelectorAll(".modal-backdrop.is-open").forEach(function (modal) {
+      modal.classList.remove("is-open");
     });
   }
 });
 
-initRuntime();
-renderOrdens();
-updateStats();
+(async function boot() {
+  setSelectedDate(todayISO());
+  const dateInput = document.getElementById("filtroData");
+  if (dateInput) {
+    dateInput.addEventListener("change", function () {
+      reloadForDate();
+    });
+  }
+  await initRuntime();
+  updateLastUpdateDisplay();
+  renderOrdens();
+  updateStats();
+  if (runtime.sbOnline) toast("Conectado ao Supabase · " + getSelectedDate(), true);
+  else toast("Supabase offline — dados locais");
+})();
 </script>
 </body>
 </html>
